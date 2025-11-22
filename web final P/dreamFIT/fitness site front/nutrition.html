@@ -5,6 +5,8 @@
   <title>DreamFIT — Nutrition Guide</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
+<script type="module" src="../../firebase/state_listener.js"></script>
+
 </head>
 <body>
 <header class="site-header">
@@ -12,10 +14,14 @@
   <nav class="main-nav">
     <a href="index.html">Home</a>
     <a href="bmi.html">BMI</a>
+     <a href="bodyfat.html">Body Fat %</a>
     <a href="workout.html">Workouts</a>
     <a href="nutrition.html" class="active">Nutrition</a>
     <a href="progress.html">Progress</a>
-    <a href="../fitness site back/index.php" class="pill-btn">Log in / Sign up</a>
+<a href="profile.html">Profile</a>
+<button id="logout-btn" class="pill-btn">Logout</button>
+<script type="module" src="../../firebase/signout.js"></script>
+
   </nav>
 </header>
 

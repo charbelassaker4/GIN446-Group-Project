@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DreamFIT — Body Fat % Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">Dream<span>FIT</span></div>
+  <nav class="main-nav">
+    <a href="index.html">Home</a>
+    <a href="bmi.html">BMI</a>
+    <a href="bodyfat.html" class="active">Body Fat %</a>
+    <a href="workout.html">Workouts</a>
+    <a href="nutrition.html">Nutrition</a>
+    <a href="progress.html">Progress</a>
+    <a href="profile.html">Profile</a>
+    <button id="logout-btn" class="pill-btn">Logout</button>
+<script type="module" src="../../firebase/signout.js"></script>
+  </nav>
+</header>
+
+<main class="page-narrow">
+  <div class="card-section">
+    <h2>Body Fat Percentage Calculator</h2>
+    <form id="bodyfat-form" class="form">
+      <div class="grid-2">
+        <div class="field">
+          <span>Gender</span>
+          <select id="gender" required>
+            <option value="">Select...</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div class="field">
+          <span>Height (cm)</span>
+          <input type="number" id="height" required min="100" max="250">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <span>Waist (cm)</span>
+          <input type="number" id="waist" required min="40" max="200">
+        </div>
+        <div class="field">
+          <span>Neck (cm)</span>
+          <input type="number" id="neck" required min="20" max="100">
+        </div>
+      </div>
+
+      <div class="grid-2 female-only" style="display:none;">
+        <div class="field">
+          <span>Hip (cm)</span>
+          <input type="number" id="hip" min="40" max="200">
+        </div>
+      </div>
+
+      <button type="submit" class="btn primary full-width">Calculate Body Fat %</button>
+    </form>
+
+    <div id="result" class="result"></div>
+  </div>
+</main>
+
+<script>
+  const form = document.getElementById('bodyfat-form');
+  const result = document.getElementById('result');
+  const genderSelect = document.getElementById('gender');
+  const femaleFields = document.querySelector('.female-only');
+
+  genderSelect.addEventListener('change', () => {
+    if (genderSelect.value === 'female') {
+      femaleFields.style.display = 'grid';
+      document.getElementById('hip').required = true;
+    } else {
+      femaleFields.style.display = 'none';
+      document.getElementById('hip').required = false;
+    }
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const gender = genderSelect.value;
+    const height = parseFloat(document.getElementById('height').value);
+    const waist = parseFloat(document.getElementById('waist').value);
+    const neck = parseFloat(document.getElementById('neck').value);
+    const hip = gender === 'female' ? parseFloat(document.getElementById('hip').value) : null;
+
+    if (!gender || !height || !waist || !neck || (gender === 'female' && !hip)) {
+      result.innerHTML = '<p class="error">Please fill in all fields.</p>';
+      return;
+    }
+
+    let bodyFat = 0;
+
+    if (gender === 'male') {
+      // U.S. Navy formula for males
+      bodyFat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+    } else {
+      // U.S. Navy formula for females
+      bodyFat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+    }
+    if (bodyFat > 100) bodyFat = 100;
+    bodyFat = bodyFat.toFixed(1);
+
+    result.innerHTML = `
+      <h3>Your Estimated Body Fat:</h3>
+      <p><strong>${bodyFat}%</strong></p>
+    `;
+  });
+</script>
+</body>
+</html>

@@ -83,7 +83,8 @@ main {
 }
 
 .pill-btn {
-  padding: 0.4rem 0.9rem;
+  padding: 0.6rem 0.9rem;
+  margin-left: 6px;
   border-radius: 999px;
   border: 1px solid #4f46e5;
   background: rgba(79,70,229,0.15);
@@ -162,6 +163,7 @@ main {
 }
 
 .full-width {
+  margin-top: 10px;
   width: 100%;
 }
 
@@ -449,3 +451,24 @@ th {
     grid-template-columns: 1fr;
   }
 }
+
+/* Make inputs in edit mode match button style */
+#profile-edit input[type="text"],
+#profile-edit input[type="number"],
+#profile-edit input[type="date"],
+#profile-edit input[type="email"] {
+  background-color: var(--btn-bg, rgba(15,23,42,0.9));
+  border: 1px solid rgba(148,163,184,0.7);
+  border-radius: 0.75rem;
+  color: #e5e7eb;
+  padding: 0.55rem 0.8rem;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#profile-edit input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 1px rgba(79,70,229,0.7);
+}
+

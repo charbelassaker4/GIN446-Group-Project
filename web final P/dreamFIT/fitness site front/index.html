@@ -5,6 +5,8 @@
   <title>DreamFIT — Fitness Companion</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
+  
+
 </head>
 <body>
 <header class="site-header">
@@ -12,11 +14,14 @@
   <nav class="main-nav">
     <a href="index.html" class="active">Home</a>
     <a href="bmi.html">BMI</a>
+     <a href="bodyfat.html">Body Fat %</a>
     <a href="workout.html">Workouts</a>
     <a href="nutrition.html">Nutrition</a>
     <a href="progress.html">Progress</a>
-    <!-- link to backend login -->
-    <a href="../fitness site back/index.php" class="pill-btn">Log in / Sign up</a>
+<a href="profile.html">Profile</a>
+<button id="logout-btn" class="pill-btn">Logout</button>
+<script type="module" src="../../firebase/signout.js"></script>
+
   </nav>
 </header>
 
@@ -99,5 +104,6 @@
 </footer>
 
 <script src="app.js"></script>
+<script type="module" src="../../firebase/state_listener.js"></script>
 </body>
 </html>
