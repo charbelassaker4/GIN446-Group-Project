@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>DreamFIT — Nutrition Guide</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">Dream<span>FIT</span></div>
+  <nav class="main-nav">
+    <a href="index.html">Home</a>
+    <a href="bmi.html">BMI</a>
+    <a href="workout.html">Workouts</a>
+    <a href="nutrition.html" class="active">Nutrition</a>
+    <a href="progress.html">Progress</a>
+    <a href="../fitness site back/index.php" class="pill-btn">Log in / Sign up</a>
+  </nav>
+</header>
+
+<main class="page-wide">
+  <h1>Nutrition &amp; Calories</h1>
+  <p class="page-intro">
+    This simple table lists example foods with an approximate calorie value per serving.
+    Use it as a starting point when planning meals for cutting, maintaining, or bulking.
+  </p>
+
+  <section class="card-section">
+    <div class="food-filter">
+      <span>Filter by category:</span>
+      <button class="chip active" data-food-filter="all">All</button>
+      <button class="chip" data-food-filter="protein">Protein</button>
+      <button class="chip" data-food-filter="carb">Carbs</button>
+      <button class="chip" data-food-filter="fat">Healthy fats</button>
+      <button class="chip" data-food-filter="snack">Snacks</button>
+      <button class="chip" data-food-filter="fruit">Fruit</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="food-table">
+        <thead>
+          <tr>
+            <th>Food</th>
+            <th>Category</th>
+            <th>Serving example</th>
+            <th>Calories (approx.)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-food-cat="protein">
+            <td>Grilled chicken breast</td>
+            <td>Protein</td>
+            <td>120 g</td>
+            <td>~200 kcal</td>
+          </tr>
+          <tr data-food-cat="protein">
+            <td>Eggs</td>
+            <td>Protein</td>
+            <td>2 whole eggs</td>
+            <td>~140 kcal</td>
+          </tr>
+          <tr data-food-cat="carb">
+            <td>Cooked rice</td>
+            <td>Carbs</td>
+            <td>1 cup</td>
+            <td>~200 kcal</td>
+          </tr>
+          <tr data-food-cat="carb">
+            <td>Oats</td>
+            <td>Carbs</td>
+            <td>40 g dry</td>
+            <td>~150 kcal</td>
+          </tr>
+          <tr data-food-cat="fruit">
+            <td>Apple</td>
+            <td>Fruit</td>
+            <td>1 medium</td>
+            <td>~80 kcal</td>
+          </tr>
+          <tr data-food-cat="fruit">
+            <td>Banana</td>
+            <td>Fruit</td>
+            <td>1 medium</td>
+            <td>~100 kcal</td>
+          </tr>
+          <tr data-food-cat="fat snack">
+            <td>Almonds</td>
+            <td>Healthy fats / Snack</td>
+            <td>30 g (small handful)</td>
+            <td>~170 kcal</td>
+          </tr>
+          <tr data-food-cat="snack">
+            <td>Air-popped popcorn</td>
+            <td>Snack</td>
+            <td>3 cups</td>
+            <td>~90 kcal</td>
+          </tr>
+          <tr data-food-cat="protein">
+            <td>Greek yogurt (plain)</td>
+            <td>Protein / Snack</td>
+            <td>150 g</td>
+            <td>~120 kcal</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>Values are approximate and for educational purposes only.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
