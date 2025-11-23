@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>DreamFIT — Workout Plans</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <script type="module" src="../../firebase/state_listener.js"></script>
+
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">Dream<span>FIT</span></div>
+  <nav class="main-nav">
+    <a href="index.html">Home</a>
+    <a href="bmi.html">BMI</a>
+     <a href="bodyfat.html">Body Fat %</a>
+    <a href="workout.html" class="active">Workouts</a>
+    <a href="nutrition.html">Nutrition</a>
+    <a href="progress.html">Progress</a>
+<a href="profile.html">Profile</a>
+<button id="logout-btn" class="pill-btn">Logout</button>
+<script type="module" src="../../firebase/signout.js"></script>
+
+  </nav>
+</header>
+
+<main class="page-wide">
+  <h1>Workout Plans &amp; Splits</h1>
+  <p class="page-intro">
+    Choose a routine that matches your schedule and goal. These are example templates you can adapt
+    to your own weight, sets, and reps.
+  </p>
+
+  <section class="card-section">
+    <div class="split-filter">
+      <span>Show plans for goal:</span>
+      <button class="chip active" data-goal-filter="all">All</button>
+      <button class="chip" data-goal-filter="cut">Cut</button>
+      <button class="chip" data-goal-filter="maintain">Maintain</button>
+      <button class="chip" data-goal-filter="bulk">Bulk</button>
+    </div>
+
+    <div class="split-grid">
+      <article class="split-card" data-goal="maintain cut">
+        <h2>3-day full body (Beginner)</h2>
+        <p class="tagline">Good for busy students or beginners.</p>
+        <ul>
+          <li><strong>Day 1:</strong> Squats, Push-ups, Rows, Planks</li>
+          <li><strong>Day 2:</strong> Lunges, Bench (or push-ups), Lat pulldown, Crunches</li>
+          <li><strong>Day 3:</strong> Deadlifts (light), Shoulder press, Biceps curls, Triceps dips</li>
+        </ul>
+      </article>
+
+      <article class="split-card" data-goal="cut maintain">
+        <h2>4-day Upper / Lower</h2>
+        <p class="tagline">Great for fat loss with enough training volume.</p>
+        <ul>
+          <li><strong>Day 1:</strong> Upper (bench, rows, shoulder press, pull-ups)</li>
+          <li><strong>Day 2:</strong> Lower (squats, RDL, leg press, calves)</li>
+          <li><strong>Day 3:</strong> Upper (incline bench, pulldown, lateral raise, arms)</li>
+          <li><strong>Day 4:</strong> Lower (front squats, lunges, hamstring curls, abs)</li>
+        </ul>
+      </article>
+
+      <article class="split-card" data-goal="bulk maintain">
+        <h2>5-day Push / Pull / Legs</h2>
+        <p class="tagline">Popular for gaining size and strength.</p>
+        <ul>
+          <li><strong>Day 1:</strong> Push — chest, shoulders, triceps</li>
+          <li><strong>Day 2:</strong> Pull — back, biceps</li>
+          <li><strong>Day 3:</strong> Legs — quads, hamstrings, calves</li>
+          <li><strong>Day 4:</strong> Push (variation)</li>
+          <li><strong>Day 5:</strong> Pull/legs mix + core</li>
+        </ul>
+      </article>
+
+      <article class="split-card" data-goal="cut">
+        <h2>Home-only fat-loss circuit</h2>
+        <p class="tagline">No equipment required.</p>
+        <ul>
+          <li>Push-ups / incline push-ups</li>
+          <li>Bodyweight squats and lunges</li>
+          <li>Mountain climbers &amp; jumping jacks</li>
+          <li>Planks and side planks</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>Always warm up and train safely. Ask a coach if you’re unsure about technique.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

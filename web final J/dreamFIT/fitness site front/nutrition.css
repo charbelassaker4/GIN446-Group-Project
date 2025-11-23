@@ -1,0 +1,85 @@
+/* SEARCH BAR */
+.search-area {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.search-area input {
+  flex: 1;
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.search-btn {
+  background: #0077ff;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+/* CATEGORY FILTERS */
+.nutrition-filters {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.nutri-chip {
+  padding: 8px 14px;
+  background: #eee;
+  border-radius: 20px;
+  cursor: pointer;
+  border: none;
+}
+
+.nutri-chip.active {
+  background: #0077ff;
+  color: white;
+}
+
+/* LOADING */
+.loading {
+  text-align: center;
+  margin: 15px 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+
+/* TABLE IMAGE */
+.food-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* RESPONSIVE TABLE */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.food-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.food-table th, .food-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.food-table tr:hover {
+  background: #f5faff;
+}

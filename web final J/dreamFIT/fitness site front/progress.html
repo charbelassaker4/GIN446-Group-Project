@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>DreamFIT — Progress Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <script type="module" src="../../firebase/state_listener.js"></script>
+
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">Dream<span>FIT</span></div>
+  <nav class="main-nav">
+    <a href="index.html">Home</a>
+    <a href="bmi.html">BMI</a>
+     <a href="bodyfat.html">Body Fat %</a>
+    <a href="workout.html">Workouts</a>
+    <a href="nutrition.html">Nutrition</a>
+    <a href="progress.html" class="active">Progress</a>
+<a href="profile.html">Profile</a>
+<button id="logout-btn" class="pill-btn">Logout</button>
+<script type="module" src="../../firebase/signout.js"></script>
+
+  </nav>
+</header>
+
+<main class="page-narrow">
+  <h1>Progress log</h1>
+  <p class="page-intro">
+    Keep a simple log of your weight and a short note for each day.
+    All entries are saved in your browser using localStorage — no account needed here.
+  </p>
+
+  <section class="card-section">
+    <form id="progress-form" class="form-grid">
+      <div class="field">
+        <label for="pg-date">Date</label>
+        <input type="date" id="pg-date" required>
+      </div>
+      <div class="field">
+        <label for="pg-weight">Weight (kg)</label>
+        <input type="number" id="pg-weight" min="20" step="0.1" required>
+      </div>
+      <div class="field full-width">
+        <label for="pg-note">Note (optional)</label>
+        <input type="text" id="pg-note" placeholder="Leg day ✅, cardio, slept well, etc.">
+      </div>
+      <button class="btn primary full-width" type="submit">Add entry</button>
+    </form>
+
+    <div id="progress-summary" class="progress-summary hidden">
+      <h2>Summary</h2>
+      <p id="pg-count"></p>
+      <p id="pg-change"></p>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="progress-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Weight (kg)</th>
+            <th>Note</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="progress-body">
+          <!-- Filled by JS -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>Progress is stored only on this device (localStorage).</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
