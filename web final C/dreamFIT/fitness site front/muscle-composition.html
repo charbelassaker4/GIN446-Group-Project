@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Muscle Body Viewer</title>
+
+  <!-- your global DreamFIT css -->
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .viewer-container {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .controls-panel {
+      background: rgba(15,23,42,0.96);
+      border-radius: 1rem;
+      padding: 1.4rem 1.5rem;
+      border: 1px solid rgba(148,163,184,0.35);
+      height: fit-content;
+    }
+
+    .controls-panel h3 {
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+      color: #e5e7eb;
+    }
+
+    .muscle-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .muscle-btn {
+      background: rgba(79,70,229,0.15);
+      border: 1px solid rgba(148,163,184,0.4);
+      border-radius: 0.7rem;
+      padding: 0.7rem;
+      color: #cbd5f5;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+    }
+
+    .muscle-btn:hover {
+      background: rgba(79,70,229,0.25);
+      border-color: #4f46e5;
+      transform: translateX(3px);
+    }
+
+    .muscle-btn.active {
+      background: rgba(79,70,229,0.4);
+      border-color: #4f46e5;
+      color: #ffffff;
+    }
+
+    .water-control {
+      padding-top: 1rem;
+      border-top: 1px solid rgba(148,163,184,0.3);
+    }
+
+    .water-control p {
+      font-size: 0.85rem;
+      color: #cbd5f5;
+      margin-bottom: 0.8rem;
+      line-height: 1.4;
+    }
+
+    #canvas-container {
+      background: radial-gradient(circle at center, #1a2942 0%, #0a1628 50%, #020617 100%);
+      border-radius: 1rem;
+      border: 1px solid rgba(59,130,246,0.3);
+      min-height: 700px;
+      height: 700px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(59,130,246,0.2);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    #api-frame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .muscle-info {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(59,130,246,0.5);
+      border-radius: 0.7rem;
+      padding: 1rem;
+      max-width: 260px;
+      display: none;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    .muscle-info.visible {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .muscle-info h4 {
+      color: #60a5fa;
+      margin-bottom: 0.5rem;
+      font-size: 1.05rem;
+    }
+
+    .muscle-info ul {
+      padding-left: 1.2rem;
+      font-size: 0.85rem;
+      color: #cbd5f5;
+      line-height: 1.6;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .water-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(
+        to top,
+        rgba(59,130,246,0.8),
+        rgba(59,130,246,0.35),
+        transparent
+      );
+      height: 0%;
+      transition: height 1.5s ease;
+      pointer-events: none;
+      border-radius: 0 0 1rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .water-percentage {
+      font-size: 5rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.95);
+      text-shadow:
+        0 0 20px rgba(59,130,246,0.8),
+        0 0 40px rgba(59,130,246,0.5);
+      opacity: 0;
+      transition: opacity 0.5s ease 0.8s;
+    }
+
+    .water-overlay.active .water-percentage {
+      opacity: 1;
+    }
+
+    .status-info {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(59,130,246,0.4);
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      color: #60a5fa;
+      backdrop-filter: blur(10px);
+      z-index: 25;
+    }
+
+    .loading-3d {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #020617 0, #020617 100%);
+      z-index: 30;
+      color: #60a5fa;
+      font-size: 1rem;
+      gap: 0.75rem;
+    }
+
+    .spinner {
+      border: 3px solid rgba(59,130,246,0.3);
+      border-top: 3px solid #60a5fa;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .viewer-container {
+        grid-template-columns: 1fr;
+      }
+
+      #canvas-container {
+        min-height: 500px;
+        height: 500px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="logo">Dream<span>FIT</span></div>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="bmi.html">BMI</a>
+      <a href="workout.html">Workouts</a>
+      <a href="nutrition.html">Nutrition</a>
+      <a href="progress.html">Progress</a>
+      <a href="#" class="active">Muscle Viewer</a>
+    </nav>
+  </header>
+
+  <main class="page-wide">
+    <h1>3D Muscle Body Viewer</h1>
+    <p class="page-intro">
+      Explore the human muscular system in realistic 3D. Drag on the model to rotate it,
+      zoom with the mouse wheel, and use the buttons to learn about each muscle group.
+    </p>
+
+    <div class="viewer-container">
+      <div class="controls-panel">
+        <h3>💪 Muscle Groups</h3>
+        <div class="muscle-list">
+          <button class="muscle-btn" data-muscle="biceps">Biceps (3 parts)</button>
+          <button class="muscle-btn" data-muscle="triceps">Triceps (3 parts)</button>
+          <button class="muscle-btn" data-muscle="chest">Chest (Pectorals)</button>
+          <button class="muscle-btn" data-muscle="shoulders">Shoulders (Deltoids)</button>
+          <button class="muscle-btn" data-muscle="abs">Abs (6-pack)</button>
+          <button class="muscle-btn" data-muscle="quadriceps">Quadriceps (4 parts)</button>
+          <button class="muscle-btn" data-muscle="hamstrings">Hamstrings (3 parts)</button>
+          <button class="muscle-btn" data-muscle="calves">Calves (2 parts)</button>
+          <button class="muscle-btn" data-muscle="back">Back (Lats)</button>
+          <button class="muscle-btn" data-muscle="traps">Trapezius (3 parts)</button>
+        </div>
+
+        <div class="water-control">
+          <h3>💧 Body Composition</h3>
+          <p>The human body is composed of approximately 70% water.</p>
+          <button id="water-btn" class="btn primary full-width">Show Water (70%)</button>
+          <button id="reset-btn" class="btn ghost full-width">Reset View</button>
+        </div>
+      </div>
+
+      <div id="canvas-container">
+        <!-- DIRECT Sketchfab embed -->
+        <iframe
+          id="api-frame"
+          title="3D Human Muscular System"
+          src="https://sketchfab.com/models/4f258907dfb6477aa9bf4dfb5833a797/embed?autostart=1&autospin=0.3&ui_infos=0&ui_watermark=0&ui_controls=1&transparent=1"
+          allow="autoplay; fullscreen; xr-spatial-tracking; gyroscope; accelerometer">
+        </iframe>
+
+        <!-- loading overlay -->
+        <div class="loading-3d" id="loading-3d">
+          <div class="spinner"></div>
+          <div>Loading 3D muscular body...</div>
+        </div>
+
+        <!-- muscle info box -->
+        <div id="muscle-info" class="muscle-info">
+          <h4 id="muscle-name">Muscle Name</h4>
+          <ul id="muscle-parts"></ul>
+        </div>
+
+        <!-- water overlay -->
+        <div id="water-overlay" class="water-overlay">
+          <div class="water-percentage">70%</div>
+        </div>
+
+        <div class="status-info">
+          🖱️ Drag to rotate • 🖱️ Wheel to zoom
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2025 DreamFIT. Educational 3D Muscle Viewer.</p>
+  </footer>
+
+  <script>
+    // ===== muscle data (same as before) =====
+    const muscleData = {
+      biceps: {
+        name: 'Biceps Brachii',
+        parts: ['Long head (outer)', 'Short head (inner)', 'Brachialis (deep)']
+      },
+      triceps: {
+        name: 'Triceps Brachii',
+        parts: ['Long head', 'Lateral head', 'Medial head']
+      },
+      chest: {
+        name: 'Pectoralis Major',
+        parts: ['Upper (clavicular)', 'Middle (sternal)', 'Lower (abdominal)']
+      },
+      shoulders: {
+        name: 'Deltoids',
+        parts: ['Anterior (front)', 'Lateral (side)', 'Posterior (rear)']
+      },
+      abs: {
+        name: 'Rectus Abdominis',
+        parts: ['Upper abs', 'Middle abs', 'Lower abs']
+      },
+      quadriceps: {
+        name: 'Quadriceps',
+        parts: ['Rectus femoris', 'Vastus lateralis', 'Vastus medialis', 'Vastus intermedius']
+      },
+      hamstrings: {
+        name: 'Hamstrings',
+        parts: ['Biceps femoris', 'Semitendinosus', 'Semimembranosus']
+      },
+      calves: {
+        name: 'Calves',
+        parts: ['Gastrocnemius (outer)', 'Soleus (deep)']
+      },
+      back: {
+        name: 'Latissimus Dorsi',
+        parts: ['Upper lats', 'Middle lats', 'Lower lats']
+      },
+      traps: {
+        name: 'Trapezius',
+        parts: ['Upper traps', 'Middle traps', 'Lower traps']
+      }
+    };
+
+    const muscleButtons = document.querySelectorAll('.muscle-btn');
+    const muscleInfo   = document.getElementById('muscle-info');
+    const muscleNameEl = document.getElementById('muscle-name');
+    const musclePartsEl = document.getElementById('muscle-parts');
+    const waterBtn = document.getElementById('water-btn');
+    const waterOverlay = document.getElementById('water-overlay');
+    const loading3D = document.getElementById('loading-3d');
+    const iframe = document.getElementById('api-frame');
+
+    let currentActiveMuscle = null;
+    let waterActive = false;
+
+    // hide loading when iframe finished
+    iframe.addEventListener('load', () => {
+      loading3D.style.display = 'none';
+    });
+
+    function showMuscleInfo(key) {
+      const data = muscleData[key];
+      if (!data) return;
+      muscleNameEl.textContent = data.name;
+      musclePartsEl.innerHTML = '';
+      data.parts.forEach(p => {
+        const li = document.createElement('li');
+        li.textContent = p;
+        musclePartsEl.appendChild(li);
+      });
+      muscleInfo.classList.add('visible');
+    }
+
+    function hideMuscleInfo() {
+      muscleInfo.classList.remove('visible');
+    }
+
+    muscleButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.muscle;
+        if (currentActiveMuscle === key) {
+          btn.classList.remove('active');
+          currentActiveMuscle = null;
+          hideMuscleInfo();
+        } else {
+          muscleButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentActiveMuscle = key;
+          showMuscleInfo(key);
+        }
+      });
+    });
+
+    // water overlay
+    waterBtn.addEventListener('click', () => {
+      waterActive = !waterActive;
+      if (waterActive) {
+        waterOverlay.style.height = '70%';
+        waterOverlay.classList.add('active');
+        waterBtn.textContent = 'Hide Water';
+      } else {
+        waterOverlay.style.height = '0%';
+        waterOverlay.classList.remove('active');
+        waterBtn.textContent = 'Show Water (70%)';
+      }
+    });
+
+    // reset view (just UI + overlay; iframe camera is controlled by user)
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      muscleButtons.forEach(b => b.classList.remove('active'));
+      currentActiveMuscle = null;
+      hideMuscleInfo();
+      waterActive = false;
+      waterOverlay.style.height = '0%';
+      waterOverlay.classList.remove('active');
+      waterBtn.textContent = 'Show Water (70%)';
+    });
+  </script>
+</body>
+</html>
+

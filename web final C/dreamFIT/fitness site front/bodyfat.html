@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DreamFIT — Body Fat % Calculator</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* Card should allow floating button */
+    .card-section {
+      position: relative;
+    }
+
+    /* ===== Floating Reset Button ===== */
+    .btn-reset-floating {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      border: 1px solid rgba(148,163,184,0.5);
+      background: rgba(15,23,42,0.6);
+      color: #fff;
+      cursor: pointer;
+      transition: 0.25s ease;
+      backdrop-filter: blur(6px);
+      z-index: 10;
+    }
+
+    .btn-reset-floating:hover {
+      background: rgba(148,163,184,0.25);
+    }
+
+    /* ===== Result Card ===== */
+    .result-card {
+      background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(129,140,248,0.15));
+      border-radius: 1rem;
+      padding: 1.25rem 1.5rem;
+      border: 1px solid rgba(148,163,184,0.5);
+      backdrop-filter: blur(6px);
+      margin-top: 1.5rem;
+    }
+
+    .result-main {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .result-number {
+      font-size: 2.4rem;
+      font-weight: 700;
+    }
+
+    .result-label {
+      font-size: 0.9rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.9;
+    }
+
+    .low-range { background: rgba(56,189,248,0.15); }
+    .healthy-range { background: rgba(52,211,153,0.18); }
+    .high-range { background: rgba(249,115,22,0.18); }
+    .very-high-range { background: rgba(248,113,113,0.18); }
+
+    .bf-meter {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.7);
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .bf-meter-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      transition: width 0.35s ease;
+      background: linear-gradient(90deg,#22c55e,#f97316,#f97373);
+    }
+
+    .insight-box {
+      margin-top: 1rem;
+      background: rgba(15,23,42,0.8);
+      border: 1px solid rgba(75,85,99,0.8);
+      padding: 1rem 1.1rem;
+      border-radius: 1rem;
+    }
+
+    .insight-box h4 {
+      font-size: 0.98rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .insight-box p {
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .error {
+      margin-top: 0.75rem;
+      padding: 0.7rem 0.9rem;
+      border-radius: 0.75rem;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.4);
+      font-size: 0.9rem;
+    }
+
+    .btn-ghost {
+      border-radius: 999px;
+      padding: 0.55rem 1rem;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .btn-ghost:hover {
+      background: rgba(148,163,184,0.12);
+    }
+  </style>
+</head>
+
+<body>
+<header class="site-header">
+  <div class="logo">Dream<span>FIT</span></div>
+  <nav class="main-nav">
+    <a href="index.html">Home</a>
+    <a href="bmi.html">BMI</a>
+    <a href="bodyfat.html" class="active">Body Fat %</a>
+    <a href="workout.html">Workouts</a>
+    <a href="nutrition.html">Nutrition</a>
+    <a href="progress.html">Progress</a>
+    <a href="profile.html">Profile</a>
+    <button id="logout-btn" class="pill-btn">Logout</button>
+    <script type="module" src="../../firebase/signout.js"></script>
+  </nav>
+</header>
+
+<main class="page-narrow">
+
+  <div class="card-section">
+
+    <!-- FLOATING RESET BUTTON -->
+    <button type="button" id="reset-btn" class="btn-reset-floating">Reset</button>
+
+    <h2>Body Fat Percentage Calculator</h2>
+
+    <p class="lead">
+      Estimate your body fat using the U.S. Navy method. Numbers help — habits matter more.
+    </p>
+
+    <form id="bodyfat-form" class="form">
+
+      <div class="grid-2">
+        <div class="field">
+          <span>Gender</span>
+          <select id="gender" required>
+            <option value="">Select...</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <span>Height (cm)</span>
+          <input type="number" id="height" required min="100" max="250">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <span>Waist (cm)</span>
+          <input type="number" id="waist" required min="40" max="200">
+        </div>
+
+        <div class="field">
+          <span>Neck (cm)</span>
+          <input type="number" id="neck" required min="20" max="100">
+        </div>
+      </div>
+
+      <div class="grid-2 female-only" style="display:none;">
+        <div class="field">
+          <span>Hip (cm)</span>
+          <input type="number" id="hip" min="40" max="200">
+        </div>
+      </div>
+
+      <button type="submit" class="btn primary full-width">Calculate Body Fat %</button>
+
+    </form>
+
+    <div id="result"></div>
+
+  </div>
+</main>
+
+<script>
+  const form = document.getElementById('bodyfat-form');
+  const result = document.getElementById('result');
+  const genderSelect = document.getElementById('gender');
+  const femaleFields = document.querySelector('.female-only');
+  const resetBtn = document.getElementById('reset-btn');
+
+  genderSelect.addEventListener('change', () => {
+    femaleFields.style.display = genderSelect.value === 'female' ? 'grid' : 'none';
+    document.getElementById('hip').required = genderSelect.value === 'female';
+    result.innerHTML = '';
+  });
+
+  resetBtn.addEventListener('click', () => {
+    form.reset();
+    femaleFields.style.display = 'none';
+    result.innerHTML = '';
+  });
+
+  function getBodyFatCategory(gender, bf) {
+    const v = bf;
+    if (gender === 'male') {
+      if (v < 6) return { label: 'Very low', className: 'low-range' };
+      if (v < 14) return { label: 'Lower end', className: 'healthy-range' };
+      if (v < 25) return { label: 'Typical', className: 'healthy-range' };
+      if (v < 32) return { label: 'Above range', className: 'high-range' };
+      return { label: 'High range', className: 'very-high-range' };
+    } else {
+      if (v < 14) return { label: 'Very low', className: 'low-range' };
+      if (v < 22) return { label: 'Lower end', className: 'healthy-range' };
+      if (v < 32) return { label: 'Typical', className: 'healthy-range' };
+      if (v < 39) return { label: 'Above range', className: 'high-range' };
+      return { label: 'High range', className: 'very-high-range' };
+    }
+  }
+
+  function getInsightText(gender) {
+    if (gender === 'male') {
+      return `
+        Body fat can vary depending on muscle mass, hydration, and genetics.
+        Focus on strength, sleep, and nutrition — not only the number.
+      `;
+    } else {
+      return `
+        Natural body fat levels vary widely due to hormonal and biological factors.
+        Aim for habits that support energy, strength, and well-being.
+      `;
+    }
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    result.innerHTML = '';
+
+    const gender = genderSelect.value;
+    const height = parseFloat(document.getElementById('height').value);
+    const waist = parseFloat(document.getElementById('waist').value);
+    const neck = parseFloat(document.getElementById('neck').value);
+    const hip = gender === 'female' ? parseFloat(document.getElementById('hip').value) : null;
+
+    if (!gender || !height || !waist || !neck || (gender === 'female' && !hip)) {
+      result.innerHTML = '<p class="error">Please fill in all fields.</p>';
+      return;
+    }
+
+    let bodyFat = 0;
+    if (gender === 'male') {
+      bodyFat = 495 / (
+        1.0324 -
+        0.19077 * Math.log10(waist - neck) +
+        0.15456 * Math.log10(height)
+      ) - 450;
+    } else {
+      bodyFat = 495 / (
+        1.29579 -
+        0.35004 * Math.log10(waist + hip - neck) +
+        0.22100 * Math.log10(height)
+      ) - 450;
+    }
+
+    if (bodyFat < 0) bodyFat = 0;
+    if (bodyFat > 100) bodyFat = 100;
+    const cat = getBodyFatCategory(gender, bodyFat);
+
+    const safeMax = 60;
+    const meterWidth = Math.min(bodyFat, safeMax) / safeMax * 100;
+
+    result.innerHTML = `
+      <div class="result-card">
+        <h3>Your estimated body fat</h3>
+
+        <p class="result-main">
+          <span class="result-number">${bodyFat.toFixed(1)}%</span>
+          <span class="result-label ${cat.className}">${cat.label}</span>
+        </p>
+
+        <div class="bf-meter">
+          <div class="bf-meter-fill" style="width:${meterWidth}%"></div>
+        </div>
+      </div>
+
+      <div class="insight-box">
+        <h4>Insight</h4>
+        <p>${getInsightText(gender)}</p>
+      </div>
+    `;
+  });
+</script>
+</body>
+</html>

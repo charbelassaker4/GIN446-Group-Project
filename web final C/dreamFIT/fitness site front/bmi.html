@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>DreamFIT — BMI Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="../../firebase/state_listener.js"></script>
+
+    <!-- Page-specific styles (do NOT touch style.css) -->
+    <style>
+      .bmi-hero {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1.2rem;
+      }
+
+      .bmi-hero-title-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .bmi-glow-pill {
+        padding: 0.2rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid rgba(129, 140, 248, 0.7);
+        background: radial-gradient(circle at top, rgba(79, 70, 229, 0.35), transparent);
+        color: #e5e7eb;
+      }
+
+      .bmi-hero-underline {
+        width: 140px;
+        height: 3px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #4f46e5, #22c55e, #f97316);
+        background-size: 200% 100%;
+        animation: bmi-bar 3s ease-in-out infinite;
+        margin-top: 0.25rem;
+      }
+
+      @keyframes bmi-bar {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      /* Slight upgrade of the main card */
+      .bmi-card-animated {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+      }
+
+      .bmi-card-animated::before {
+        content: "";
+        position: absolute;
+        inset: -40%;
+        background:
+          radial-gradient(circle at 0% 0%, rgba(79,70,229,0.35), transparent 55%),
+          radial-gradient(circle at 100% 100%, rgba(34,197,94,0.25), transparent 55%);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        z-index: -1;
+      }
+
+      .bmi-card-animated:hover::before {
+        opacity: 1;
+      }
+
+      /* Result block */
+      .bmi-result {
+        margin-top: 1.6rem;
+        border-radius: 1rem;
+        background: radial-gradient(circle at top left,
+          rgba(79,70,229,0.35),
+          rgba(15,23,42,0.98));
+        padding: 1.3rem 1.3rem 1.4rem;
+        display: grid;
+        grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+        gap: 1.2rem;
+        align-items: center;
+        transform-origin: top;
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+        transition: opacity 0.35s ease, transform 0.35s ease;
+      }
+
+      .bmi-result.visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      .bmi-meter {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .bmi-ring {
+        width: 170px;
+        height: 170px;
+        position: relative;
+      }
+
+      .bmi-ring svg {
+        transform: rotate(-90deg);
+      }
+
+      .bmi-ring-bg {
+        stroke: rgba(30,64,175,0.6);
+        stroke-width: 10;
+        fill: none;
+      }
+
+      .bmi-ring-value {
+        stroke: url(#bmiGradient);
+        stroke-width: 10;
+        stroke-linecap: round;
+        fill: none;
+        stroke-dasharray: 440;
+        stroke-dashoffset: 440;
+        transition: stroke-dashoffset 0.7s ease-out;
+      }
+
+      .bmi-ring-center {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .bmi-number {
+        font-size: 2.6rem;
+        font-weight: 800;
+      }
+
+      .bmi-number span {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #9ca3af;
+      }
+
+      .bmi-category-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        border-width: 1px;
+        border-style: solid;
+      }
+
+      .bmi-category-underweight {
+        border-color: #0ea5e9;
+        background: rgba(14,165,233,0.12);
+        color: #e0f2fe;
+      }
+
+      .bmi-category-normal {
+        border-color: #22c55e;
+        background: rgba(34,197,94,0.12);
+        color: #dcfce7;
+      }
+
+      .bmi-category-overweight {
+        border-color: #f97316;
+        background: rgba(249,115,22,0.14);
+        color: #ffedd5;
+      }
+
+      .bmi-category-obesity {
+        border-color: #ef4444;
+        background: rgba(239,68,68,0.14);
+        color: #fee2e2;
+      }
+
+      .bmi-result-text h2 {
+        margin-bottom: 0.4rem;
+      }
+
+      .bmi-result-text p {
+        margin-bottom: 0.25rem;
+      }
+
+      .bmi-result-text p.small-muted {
+        margin-top: 0.35rem;
+      }
+
+      @media (max-width: 640px) {
+        .bmi-result {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="logo">Dream<span>FIT</span></div>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="bmi.html" class="active">BMI</a>
+        <a href="bodyfat.html">Body Fat %</a>
+        <a href="workout.html">Workouts</a>
+        <a href="nutrition.html">Nutrition</a>
+        <a href="progress.html">Progress</a>
+        <a href="profile.html">Profile</a>
+        <button id="logout-btn" class="pill-btn">Logout</button>
+        <script type="module" src="../firebase/signout.js"></script>
+      </nav>
+    </header>
+
+    <main class="page-narrow">
+      <section class="bmi-hero">
+        <div class="bmi-hero-title-row">
+          <h1>BMI &amp; Body Status</h1>
+          <span class="bmi-glow-pill">Quick health snapshot</span>
+        </div>
+        <div class="bmi-hero-underline"></div>
+        <p class="page-intro">
+          Use the Body Mass Index (BMI) to get a quick estimate of your weight
+          category. This is only a rough indicator — always combine it with common
+          sense, body fat %, and other health markers.
+        </p>
+      </section>
+
+      <section class="card-section bmi-card-animated">
+        <form id="bmi-form" class="form-grid">
+          <div class="field">
+            <label for="bmi-weight">Weight (kg)</label>
+            <input type="number" id="bmi-weight" min="20" step="0.1" required />
+          </div>
+          <div class="field">
+            <label for="bmi-height">Height (cm)</label>
+            <input
+              type="number"
+              id="bmi-height"
+              min="120"
+              step="0.1"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="bmi-goal">Goal</label>
+            <select id="bmi-goal">
+              <option value="maintain">Maintain</option>
+              <option value="cut">Cut (lose fat)</option>
+              <option value="bulk">Bulk (gain muscle)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn primary full-width">
+            Calculate BMI
+          </button>
+        </form>
+
+        <!-- Animated result block -->
+        <div id="bmi-result" class="bmi-result hidden">
+          <div class="bmi-meter">
+            <div class="bmi-ring">
+              <svg viewBox="0 0 160 160">
+                <defs>
+                  <linearGradient id="bmiGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#0ea5e9" />
+                    <stop offset="50%" stop-color="#22c55e" />
+                    <stop offset="100%" stop-color="#f97316" />
+                  </linearGradient>
+                </defs>
+                <!-- circle path length ≈ 2πr => 2*π*70 ≈ 439 -->
+                <circle class="bmi-ring-bg" cx="80" cy="80" r="70" />
+                <circle class="bmi-ring-value" id="bmi-ring-value" cx="80" cy="80" r="70" />
+              </svg>
+              <div class="bmi-ring-center">
+                <div class="bmi-number">
+                  <span id="bmi-number">0.0</span>
+                  <span>kg/m²</span>
+                </div>
+                <div id="bmi-cat-pill-wrapper"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bmi-result-text">
+            <h2>Your result</h2>
+            <p id="bmi-category"></p>
+            <p id="bmi-status-line"></p>
+            <p id="bmi-tip" class="small-muted"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="bmi-table card-section">
+        <h2>BMI categories</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>BMI range</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Underweight</td>
+              <td>&lt; 18.5</td>
+            </tr>
+            <tr>
+              <td>Normal weight</td>
+              <td>18.5 – 24.9</td>
+            </tr>
+            <tr>
+              <td>Overweight</td>
+              <td>25 – 29.9</td>
+            </tr>
+            <tr>
+              <td>Obesity</td>
+              <td>≥ 30</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>DreamFIT BMI tool — for educational use only.</p>
+    </footer>
+
+    <!-- Inline BMI logic + animations -->
+    <script>
+      const form = document.getElementById('bmi-form');
+      const resultBlock = document.getElementById('bmi-result');
+      const bmiNumberEl = document.getElementById('bmi-number');
+      const bmiRingValue = document.getElementById('bmi-ring-value');
+      const bmiCatEl = document.getElementById('bmi-category');
+      const bmiStatusLine = document.getElementById('bmi-status-line');
+      const bmiTipEl = document.getElementById('bmi-tip');
+      const catPillWrapper = document.getElementById('bmi-cat-pill-wrapper');
+
+      function getCategory(bmi) {
+        if (bmi < 18.5) return 'underweight';
+        if (bmi < 25) return 'normal';
+        if (bmi < 30) return 'overweight';
+        return 'obesity';
+      }
+
+      function categoryLabel(cat) {
+        switch (cat) {
+          case 'underweight': return 'Underweight';
+          case 'normal': return 'Normal weight';
+          case 'overweight': return 'Overweight';
+          case 'obesity': return 'Obesity';
+          default: return '';
+        }
+      }
+
+      function goalTip(cat, goal) {
+        if (goal === 'maintain') {
+          if (cat === 'normal') {
+            return 'Great! Staying active, sleeping well, and tracking your nutrition will help you maintain this range.';
+          }
+          if (cat === 'underweight') {
+            return 'Try to slowly increase your calories with nutrient-dense foods and a resistance-training plan.';
+          }
+          return 'Focus on balanced meals, walking more, and progressive training to move slowly toward the normal range.';
+        }
+
+        if (goal === 'cut') {
+          if (cat === 'underweight') {
+            return 'You are already underweight — a cutting phase is not recommended. Talk to a health professional first.';
+          }
+          if (cat === 'normal') {
+            return 'Even in the normal range, a small cut must be gentle: small calorie deficit, high protein, and weight training.';
+          }
+          return 'Aim for a slow cut: small calorie deficit, more steps, and consistent workouts. Avoid extreme diets.';
+        }
+
+        // bulk
+        if (cat === 'obesity') {
+          return 'Before a bulk, it is usually safer to reduce body fat a bit. Focus on a moderate cut and strength training.';
+        }
+        return 'Use a small calorie surplus, high protein, and progressive overload to add mostly muscle, not just fat.';
+      }
+
+      function animateNumber(el, from, to, duration) {
+        const start = performance.now();
+        function frame(now) {
+          const t = Math.min(1, (now - start) / duration);
+          const value = from + (to - from) * t;
+          el.textContent = value.toFixed(1);
+          if (t < 1) requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const weight = parseFloat(document.getElementById('bmi-weight').value);
+        const heightCm = parseFloat(document.getElementById('bmi-height').value);
+        const goal = document.getElementById('bmi-goal').value;
+
+        if (!weight || !heightCm) return;
+
+        const heightM = heightCm / 100;
+        const bmi = weight / (heightM * heightM);
+        const bmiRounded = parseFloat(bmi.toFixed(1));
+
+        const cat = getCategory(bmiRounded);
+        const label = categoryLabel(cat);
+
+        // Show block with animation
+        resultBlock.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          resultBlock.classList.add('visible');
+        });
+
+        // Animate number
+        const currentDisplayed = parseFloat(bmiNumberEl.textContent) || 0;
+        animateNumber(bmiNumberEl, currentDisplayed, bmiRounded, 600);
+
+        // Animate ring: map 0–40 BMI -> 0–100% of circle
+        const maxBmiForRing = 40;
+        const clamped = Math.max(0, Math.min(maxBmiForRing, bmiRounded));
+        const percent = clamped / maxBmiForRing;
+        const circumference = 440; // our dasharray
+        const offset = circumference * (1 - percent);
+        requestAnimationFrame(() => {
+          bmiRingValue.style.strokeDashoffset = offset;
+        });
+
+        // Texts
+        bmiCatEl.textContent = `Category: ${label}`;
+        bmiStatusLine.textContent = `Your BMI is ${bmiRounded} kg/m².`;
+
+        // Pill
+        catPillWrapper.innerHTML = '';
+        const pill = document.createElement('span');
+        pill.className =
+          'bmi-category-pill ' +
+          (cat === 'underweight' ? 'bmi-category-underweight' :
+           cat === 'normal' ? 'bmi-category-normal' :
+           cat === 'overweight' ? 'bmi-category-overweight' :
+           'bmi-category-obesity');
+        pill.textContent = label;
+        catPillWrapper.appendChild(pill);
+
+        // Tip depending on goal
+        bmiTipEl.textContent = goalTip(cat, goal);
+      });
+    </script>
+  </body>
+</html>

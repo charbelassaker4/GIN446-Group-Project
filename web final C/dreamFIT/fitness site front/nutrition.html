@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>DreamFIT — Nutrition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Page-specific styles -->
+  <style>
+    .nutrition-layout {
+      margin-top: 1.8rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.5fr);
+      gap: 1.6rem;
+      align-items: flex-start;
+    }
+
+    .hero-left h1 {
+      font-size: clamp(2.1rem, 4vw, 2.7rem);
+      margin-bottom: 0.4rem;
+    }
+
+    .hero-left h1 span {
+      color: #4f46e5;
+    }
+
+    .hero-left p {
+      color: #cbd5f5;
+      line-height: 1.6;
+      margin-bottom: 0.8rem;
+    }
+
+    .hero-bullets {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-top: 0.4rem;
+    }
+
+    .hero-bullets li {
+      margin-left: 1.4rem;
+      margin-bottom: 0.15rem;
+    }
+
+    .hero-actions {
+      margin-top: 1.1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+
+    .hero-small {
+      font-size: 0.78rem;
+      color: #cbd5f5;
+      margin-top: 0.4rem;
+    }
+
+    .hero-right {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .macro-card {
+      padding: 1rem 1.1rem 1.2rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(148,163,184,0.4);
+      background: radial-gradient(circle at top left, rgba(79,70,229,0.4), rgba(15,23,42,0.95));
+    }
+
+    .macro-card h2 {
+      font-size: 1rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .macro-card p {
+      font-size: 0.86rem;
+      color: #e5e7eb;
+    }
+
+    .target-grid {
+      margin-top: 0.8rem;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6rem 0.8rem;
+    }
+
+    .target-grid .field label {
+      font-size: 0.78rem;
+      color: #e5e7eb;
+    }
+
+    .target-grid .field input {
+      font-size: 0.86rem;
+    }
+
+    .target-actions {
+      margin-top: 0.7rem;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .macro-strip {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+    }
+
+    .macro-bars {
+      margin-top: 0.7rem;
+      display: grid;
+      gap: 0.4rem;
+    }
+
+    .macro-bar-label {
+      font-size: 0.8rem;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .macro-bar {
+      width: 100%;
+      height: 0.45rem;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(148,163,184,0.4);
+      background: rgba(15,23,42,0.95);
+    }
+
+    .macro-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(to right, #4f46e5, #22c55e);
+      transition: width 0.2s ease-out;
+    }
+
+    .tag-muted {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.6);
+      color: #cbd5f5;
+      margin-top: 0.35rem;
+    }
+
+    /* Quick meal planner */
+    .planner-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.7fr);
+      gap: 1.4rem;
+      align-items: flex-start;
+    }
+
+    .planner-note {
+      font-size: 0.83rem;
+      color: #9ca3af;
+      margin-top: 0.3rem;
+    }
+
+    .meal-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.7rem 0.75rem;
+      margin-top: 0.7rem;
+    }
+
+    .meal-form-grid .field label {
+      font-size: 0.8rem;
+    }
+
+    .meal-form-actions {
+      margin-top: 0.7rem;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .summary-box {
+      font-size: 0.86rem;
+      color: #e5e7eb;
+    }
+
+    .summary-box p {
+      margin-bottom: 0.25rem;
+    }
+
+    .summary-box strong {
+      color: #a5b4fc;
+    }
+
+    .btn.small {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.78rem;
+      box-shadow: none;
+    }
+
+    .btn.outline-danger {
+      background: transparent;
+      border: 1px solid rgba(248,113,113,0.9);
+      color: #fecaca;
+    }
+
+    .btn.outline-danger:hover {
+      background: rgba(248,113,113,0.12);
+    }
+
+    /* API area */
+    .api-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.6fr);
+      gap: 1.3rem;
+      align-items: flex-start;
+    }
+
+    .api-helper-text {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-top: 0.4rem;
+    }
+
+    .api-shortcut {
+      font-size: 0.8rem;
+      color: #a5b4fc;
+      margin-top: 0.3rem;
+    }
+
+    .api-shortcut code {
+      font-size: 0.78rem;
+    }
+
+    .table-note {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-top: 0.3rem;
+    }
+
+    @media (max-width: 900px) {
+      .nutrition-layout,
+      .planner-layout,
+      .api-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- HEADER / NAV -->
+  <header class="site-header">
+    <div class="logo">Dream<span>FIT</span></div>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="bmi.html">BMI</a>
+      <a href="workout.html">Workouts</a>
+      <a href="nutrition.html" class="active">Nutrition</a>
+      <a href="progress.html">Progress</a>
+    </nav>
+  </header>
+
+  <main class="page-wide">
+    <!-- DASHBOARD HERO -->
+    <section class="nutrition-layout">
+      <!-- LEFT: intro + actions -->
+      <div class="hero-left">
+        <h1>Nutrition <span>Dashboard</span></h1>
+        <p>
+          Control your daily calories and macros like a coach.  
+          Set your targets, add your meals, and use the food database to keep every plate on track.
+        </p>
+
+        <ul class="hero-bullets">
+          <li>Set your own calorie &amp; macro targets.</li>
+          <li>Add meals and see live progress for the day.</li>
+          <li>Search thousands of foods with real USDA data.</li>
+        </ul>
+
+        <div class="hero-actions">
+          <a href="#targets" class="btn primary">Edit daily targets</a>
+          <a href="#meal-planner" class="btn ghost">Plan today’s meals</a>
+          <a href="#api-search" class="btn ghost">Search food database</a>
+        </div>
+
+        <p class="hero-small">
+          Tip: combine this with your <strong>BMI</strong> and <strong>workout split</strong> pages to build a full DreamFIT routine.
+        </p>
+      </div>
+
+      <!-- RIGHT: daily macro snapshot -->
+      <div class="hero-right" id="targets">
+        <div class="macro-card">
+          <h2>Daily macro snapshot</h2>
+          <p>
+            Set your daily targets here. They are saved locally in this browser only, so you can tweak them for
+            <strong>cutting</strong>, <strong>maintenance</strong>, or <strong>bulking</strong>.
+          </p>
+
+          <form id="target-form" class="target-grid">
+            <div class="field">
+              <label for="target-kcal">Calories (kcal)</label>
+              <input type="number" id="target-kcal" min="0" placeholder="ex: 2200">
+            </div>
+            <div class="field">
+              <label for="target-protein">Protein (g)</label>
+              <input type="number" id="target-protein" min="0" placeholder="ex: 150">
+            </div>
+            <div class="field">
+              <label for="target-carbs">Carbs (g)</label>
+              <input type="number" id="target-carbs" min="0" placeholder="ex: 230">
+            </div>
+            <div class="field">
+              <label for="target-fat">Fat (g)</label>
+              <input type="number" id="target-fat" min="0" placeholder="ex: 70">
+            </div>
+          </form>
+
+          <div class="target-actions">
+            <button type="button" id="save-targets-btn" class="btn primary small">Save targets</button>
+          </div>
+
+          <div class="macro-strip">
+            <div class="stat-card">
+              <span class="stat-number" id="stat-kcal">2200 kcal</span>
+              <span class="stat-label">Daily calories</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number" id="stat-protein">150 g</span>
+              <span class="stat-label">Daily protein</span>
+            </div>
+          </div>
+
+          <p class="hero-small">
+            Saved automatically in this browser. Adjust any time you change phase (cut / maintain / bulk).
+          </p>
+        </div>
+
+        <div class="card-section" style="padding: 1.1rem 1.1rem 1.2rem;">
+          <h2 style="font-size:1rem;margin-bottom:0.5rem;">Today’s macro progress</h2>
+          <p class="small-muted">
+            Based on meals you add below. Bars fill as you log more food.
+          </p>
+
+          <div class="macro-bars">
+            <div>
+              <div class="macro-bar-label">
+                <span>Calories</span>
+                <span id="bar-kcal-label">0 / 0</span>
+              </div>
+              <div class="macro-bar"><div class="macro-bar-fill" id="bar-kcal-fill"></div></div>
+            </div>
+            <div>
+              <div class="macro-bar-label">
+                <span>Protein</span>
+                <span id="bar-protein-label">0 / 0</span>
+              </div>
+              <div class="macro-bar"><div class="macro-bar-fill" id="bar-protein-fill"></div></div>
+            </div>
+            <div>
+              <div class="macro-bar-label">
+                <span>Carbs</span>
+                <span id="bar-carbs-label">0 / 0</span>
+              </div>
+              <div class="macro-bar"><div class="macro-bar-fill" id="bar-carbs-fill"></div></div>
+            </div>
+            <div>
+              <div class="macro-bar-label">
+                <span>Fat</span>
+                <span id="bar-fat-label">0 / 0</span>
+              </div>
+              <div class="macro-bar"><div class="macro-bar-fill" id="bar-fat-fill"></div></div>
+            </div>
+          </div>
+
+          <span class="tag-muted" id="macro-status-tag">No meals logged yet.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUICK MEAL PLANNER -->
+    <section id="meal-planner" class="card-section">
+      <h2>Quick meal planner</h2>
+      <p class="page-intro">
+        Log what you eat and see how it moves your macros for the day.  
+        You can also add foods directly from the database table with the “Add” buttons.
+      </p>
+
+      <div class="planner-layout">
+        <!-- LEFT: form -->
+        <div>
+          <form id="meal-form">
+            <div class="meal-form-grid">
+              <div class="field full-width">
+                <label for="meal-name">Meal name</label>
+                <input type="text" id="meal-name" placeholder="ex: Breakfast omelette" required>
+              </div>
+              <div class="field">
+                <label for="meal-kcal">Calories (kcal)</label>
+                <input type="number" id="meal-kcal" min="0" step="0.1" required>
+              </div>
+              <div class="field">
+                <label for="meal-protein">Protein (g)</label>
+                <input type="number" id="meal-protein" min="0" step="0.1" required>
+              </div>
+              <div class="field">
+                <label for="meal-carbs">Carbs (g)</label>
+                <input type="number" id="meal-carbs" min="0" step="0.1" required>
+              </div>
+              <div class="field">
+                <label for="meal-fat">Fat (g)</label>
+                <input type="number" id="meal-fat" min="0" step="0.1" required>
+              </div>
+              <div class="field">
+                <label for="meal-fiber">Fiber (g)</label>
+                <input type="number" id="meal-fiber" min="0" step="0.1" value="0">
+              </div>
+            </div>
+
+            <div class="meal-form-actions">
+              <button type="submit" class="btn primary small">Add meal</button>
+            </div>
+
+            <p class="planner-note">
+              You can copy numbers from the search results table below.  
+              Example: search “chicken breast 150 g” → click “Add” to push that food into today’s meals.
+            </p>
+          </form>
+        </div>
+
+        <!-- RIGHT: table + summary -->
+        <div>
+          <div class="table-wrapper">
+            <table class="progress-table">
+              <thead>
+                <tr>
+                  <th>Meal</th>
+                  <th>Calories</th>
+                  <th>Protein (g)</th>
+                  <th>Carbs (g)</th>
+                  <th>Fat (g)</th>
+                  <th>Fiber (g)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="meal-table-body"></tbody>
+            </table>
+          </div>
+
+          <div class="summary-box" style="margin-top:0.7rem;">
+            <p><strong>Totals today:</strong></p>
+            <p id="summary-kcal">Calories: 0</p>
+            <p id="summary-protein">Protein: 0 g</p>
+            <p id="summary-carbs">Carbs: 0 g</p>
+            <p id="summary-fat">Fat: 0 g</p>
+            <p id="summary-fiber">Fiber: 0 g</p>
+
+            <button type="button" id="clear-meals-btn" class="btn outline-danger small" style="margin-top:0.5rem;">
+              Reset today’s meals
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEARCH + API SECTION -->
+    <section id="api-search" class="card-section">
+      <h2>Food database (USDA)</h2>
+      <p class="page-intro">
+        Search the official USDA FoodData Central database.  
+        You’ll get macros per serving, and you can send items directly into your meal planner.
+      </p>
+
+      <div class="api-layout">
+        <!-- LEFT: search form -->
+        <div>
+          <form id="food-search-form" class="form-grid" autocomplete="off">
+            <div class="field full-width">
+              <label for="food-search-input">Food name</label>
+              <input
+                id="food-search-input"
+                type="text"
+                placeholder="ex: banana, chicken breast, oatmeal 50g, rice cooked..."
+                required
+              />
+              <p class="api-helper-text">
+                If you don’t specify a quantity, we’ll search using a standard serving (often 100 g).
+              </p>
+              <p class="api-shortcut">
+                Try:
+                <code>banana</code>,
+                <code>chicken breast</code>,
+                <code>white rice cooked</code>,
+                <code>almonds 30g</code>.
+              </p>
+            </div>
+
+            <div class="field">
+              <label>&nbsp;</label>
+              <button type="submit" class="btn primary full-width">Search USDA</button>
+            </div>
+          </form>
+
+          <div id="api-status"></div>
+          <p class="table-note">
+            Click <strong>Add</strong> in the results table to push a food directly into today’s meals.
+          </p>
+        </div>
+
+        <!-- RIGHT: results table -->
+        <div>
+          <div id="api-results-wrapper" class="table-wrapper hidden">
+            <table class="food-table">
+              <thead>
+                <tr>
+                  <th>Food</th>
+                  <th>Serving</th>
+                  <th>Calories</th>
+                  <th>Protein (g)</th>
+                  <th>Carbs (g)</th>
+                  <th>Fat (g)</th>
+                  <th>Fiber (g)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="api-results-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      DreamFIT — Nutrition • Built by Charbel with code &amp; passion 💪
+    </footer>
+  </main>
+
+  <!-- PAGE SCRIPT -->
+  <script>
+    // ======== TARGETS + MEALS STATE ========
+    const STORAGE_TARGET_KEY = "dreamfit-nutrition-target-v1";
+    const STORAGE_MEALS_KEY = "dreamfit-nutrition-meals-v1";
+
+    const defaultTargets = { kcal: 2200, protein: 150, carbs: 230, fat: 70 };
+    let targets = { ...defaultTargets };
+    let meals = [];
+
+    function loadTargets() {
+      try {
+        const raw = localStorage.getItem(STORAGE_TARGET_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          targets = { ...targets, ...parsed };
+        }
+      } catch (e) {
+        console.warn("Could not load targets:", e);
+      }
+    }
+
+    function saveTargets() {
+      localStorage.setItem(STORAGE_TARGET_KEY, JSON.stringify(targets));
+    }
+
+    function loadMeals() {
+      try {
+        const raw = localStorage.getItem(STORAGE_MEALS_KEY);
+        if (raw) {
+          meals = JSON.parse(raw);
+        }
+      } catch (e) {
+        console.warn("Could not load meals:", e);
+      }
+    }
+
+    function saveMeals() {
+      localStorage.setItem(STORAGE_MEALS_KEY, JSON.stringify(meals));
+    }
+
+    // ======== UI HELPERS ========
+    function updateTargetUI() {
+      document.getElementById("target-kcal").value = targets.kcal || "";
+      document.getElementById("target-protein").value = targets.protein || "";
+      document.getElementById("target-carbs").value = targets.carbs || "";
+      document.getElementById("target-fat").value = targets.fat || "";
+
+      document.getElementById("stat-kcal").textContent = (targets.kcal || 0) + " kcal";
+      document.getElementById("stat-protein").textContent = (targets.protein || 0) + " g";
+
+      updateMealSummary();
+    }
+
+    function getMealsTotals() {
+      return meals.reduce(
+        (acc, m) => {
+          acc.kcal += m.kcal;
+          acc.protein += m.protein;
+          acc.carbs += m.carbs;
+          acc.fat += m.fat;
+          acc.fiber += m.fiber;
+          return acc;
+        },
+        { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+      );
+    }
+
+    function renderMealsTable() {
+      const tbody = document.getElementById("meal-table-body");
+      tbody.innerHTML = "";
+
+      meals.forEach((m, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${m.name}</td>
+          <td>${m.kcal.toFixed(1)}</td>
+          <td>${m.protein.toFixed(1)}</td>
+          <td>${m.carbs.toFixed(1)}</td>
+          <td>${m.fat.toFixed(1)}</td>
+          <td>${m.fiber.toFixed(1)}</td>
+          <td><button type="button" class="btn outline-danger small" data-index="${idx}">Remove</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateMealSummary() {
+      const totals = getMealsTotals();
+
+      document.getElementById("summary-kcal").textContent = "Calories: " + totals.kcal.toFixed(1);
+      document.getElementById("summary-protein").textContent = "Protein: " + totals.protein.toFixed(1) + " g";
+      document.getElementById("summary-carbs").textContent = "Carbs: " + totals.carbs.toFixed(1) + " g";
+      document.getElementById("summary-fat").textContent = "Fat: " + totals.fat.toFixed(1) + " g";
+      document.getElementById("summary-fiber").textContent = "Fiber: " + totals.fiber.toFixed(1) + " g";
+
+      // Bars
+      const barConfigs = [
+        { key: "kcal", labelId: "bar-kcal-label", fillId: "bar-kcal-fill" },
+        { key: "protein", labelId: "bar-protein-label", fillId: "bar-protein-fill" },
+        { key: "carbs", labelId: "bar-carbs-label", fillId: "bar-carbs-fill" },
+        { key: "fat", labelId: "bar-fat-label", fillId: "bar-fat-fill" }
+      ];
+
+      barConfigs.forEach(cfg => {
+        const targetVal = targets[cfg.key] || 0;
+        const currentVal = totals[cfg.key] || 0;
+
+        const label = document.getElementById(cfg.labelId);
+        const fill = document.getElementById(cfg.fillId);
+
+        label.textContent = `${currentVal.toFixed(1)} / ${targetVal || 0}`;
+
+        let pct = targetVal > 0 ? (currentVal / targetVal) * 100 : 0;
+        if (pct > 150) pct = 150; // cap
+        fill.style.width = pct + "%";
+      });
+
+      const tag = document.getElementById("macro-status-tag");
+      if (meals.length === 0) {
+        tag.textContent = "No meals logged yet.";
+      } else {
+        const kcalDiff = (targets.kcal || 0) - totals.kcal;
+        if (!targets.kcal) {
+          tag.textContent = "Meals logged. Set a calorie target to see how close you are.";
+        } else if (kcalDiff > 200) {
+          tag.textContent = "You still have room in your calorie budget today.";
+        } else if (kcalDiff > -200) {
+          tag.textContent = "Nice! You are close to your calorie target.";
+        } else {
+          tag.textContent = "Warning: you passed your calorie target today.";
+        }
+      }
+    }
+
+    function addMeal(obj) {
+      meals.push(obj);
+      saveMeals();
+      renderMealsTable();
+      updateMealSummary();
+    }
+
+    // ======== USDA API SEARCH ========
+    const foodSearchForm = document.getElementById("food-search-form");
+    const foodSearchInput = document.getElementById("food-search-input");
+    const apiStatus = document.getElementById("api-status");
+    const apiResultsWrapper = document.getElementById("api-results-wrapper");
+    const apiResultsBody = document.getElementById("api-results-body");
+
+    const USDA_API_KEY = "PdI9gQtlxuwJgjNsfkFzvlarU8u30cMLPTHiJIHT";
+
+    async function searchUSDA(query) {
+      let cleanedQuery = query.trim();
+      if (!cleanedQuery) return [];
+
+      const url =
+        "https://api.nal.usda.gov/fdc/v1/foods/search" +
+        "?api_key=" + encodeURIComponent(USDA_API_KEY) +
+        "&pageSize=10" +
+        "&query=" + encodeURIComponent(cleanedQuery);
+
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error("HTTP " + res.status);
+      }
+      const data = await res.json();
+      return data.foods || [];
+    }
+
+    function extractMacros(food) {
+      const nutrients = food.foodNutrients || [];
+
+      const getVal = (numbers, names) => {
+        const match = nutrients.find(n => {
+          const numOk = n.nutrientNumber && numbers.includes(String(n.nutrientNumber));
+          const nameOk =
+            n.nutrientName &&
+            names.some(name => n.nutrientName.toLowerCase().includes(name));
+          return numOk || nameOk;
+        });
+        return match ? match.value : null;
+      };
+
+      const kcal    = getVal(["1008"], ["energy"]);
+      const protein = getVal(["1003"], ["protein"]);
+      const carbs   = getVal(["1005"], ["carbohydrate"]);
+      const fat     = getVal(["1004"], ["fat", "lipid"]);
+      const fiber   = getVal(["1079"], ["fiber"]);
+
+      function fmt(v) {
+        return v != null ? Number(v).toFixed(1) : "—";
+      }
+
+      return {
+        kcal: fmt(kcal),
+        protein: fmt(protein),
+        carbs: fmt(carbs),
+        fat: fmt(fat),
+        fiber: fmt(fiber)
+      };
+    }
+
+    function getServingText(food) {
+      const size = food.servingSize;
+      const unit = food.servingSizeUnit;
+      const household = food.householdServingFullText;
+      if (household) return household;
+      if (size && unit) return size + " " + unit;
+      return "Standard USDA serving (often 100 g)";
+    }
+
+    foodSearchForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const query = foodSearchInput.value.trim();
+      if (!query) return;
+
+      apiStatus.textContent = "Searching USDA FoodData Central…";
+      apiStatus.className = "";
+      apiResultsWrapper.classList.add("hidden");
+      apiResultsBody.innerHTML = "";
+
+      try {
+        const foods = await searchUSDA(query);
+
+        if (!foods || foods.length === 0) {
+          apiStatus.textContent =
+            "No results found. Try simpler wording (ex: 'banana', 'chicken breast', 'oats').";
+          apiStatus.className = "error";
+          return;
+        }
+
+        foods.forEach(food => {
+          const macros = extractMacros(food);
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${food.description}</td>
+            <td>${getServingText(food)}</td>
+            <td>${macros.kcal}</td>
+            <td>${macros.protein}</td>
+            <td>${macros.carbs}</td>
+            <td>${macros.fat}</td>
+            <td>${macros.fiber}</td>
+            <td><button type="button" class="btn primary small btn-add-from-api">Add</button></td>
+          `;
+
+          const btn = tr.querySelector(".btn-add-from-api");
+          btn.addEventListener("click", () => {
+            const kcal = parseFloat(macros.kcal) || 0;
+            const protein = parseFloat(macros.protein) || 0;
+            const carbs = parseFloat(macros.carbs) || 0;
+            const fat = parseFloat(macros.fat) || 0;
+            const fiber = parseFloat(macros.fiber) || 0;
+
+            addMeal({
+              name: food.description,
+              kcal,
+              protein,
+              carbs,
+              fat,
+              fiber
+            });
+          });
+
+          apiResultsBody.appendChild(tr);
+        });
+
+        apiResultsWrapper.classList.remove("hidden");
+        apiStatus.textContent = "Results loaded. Click “Add” to send a food into today’s meals.";
+        apiStatus.className = "success";
+      } catch (err) {
+        console.error(err);
+        apiStatus.textContent =
+          "USDA API error. Check your connection or try again later.";
+        apiStatus.className = "error";
+      }
+    });
+
+    // ======== MEAL FORM HANDLERS ========
+    const mealForm = document.getElementById("meal-form");
+    const mealTableBody = document.getElementById("meal-table-body");
+
+    mealForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("meal-name").value.trim() || "Meal";
+      const kcal = parseFloat(document.getElementById("meal-kcal").value) || 0;
+      const protein = parseFloat(document.getElementById("meal-protein").value) || 0;
+      const carbs = parseFloat(document.getElementById("meal-carbs").value) || 0;
+      const fat = parseFloat(document.getElementById("meal-fat").value) || 0;
+      const fiber = parseFloat(document.getElementById("meal-fiber").value) || 0;
+
+      addMeal({ name, kcal, protein, carbs, fat, fiber });
+
+      mealForm.reset();
+    });
+
+    mealTableBody.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-index]");
+      if (!btn) return;
+      const idx = parseInt(btn.dataset.index, 10);
+      if (Number.isNaN(idx)) return;
+      meals.splice(idx, 1);
+      saveMeals();
+      renderMealsTable();
+      updateMealSummary();
+    });
+
+    document.getElementById("clear-meals-btn").addEventListener("click", () => {
+      if (!meals.length) return;
+      meals = [];
+      saveMeals();
+      renderMealsTable();
+      updateMealSummary();
+    });
+
+    // ======== TARGET FORM HANDLER ========
+    document.getElementById("save-targets-btn").addEventListener("click", () => {
+      const kcal = parseFloat(document.getElementById("target-kcal").value) || 0;
+      const protein = parseFloat(document.getElementById("target-protein").value) || 0;
+      const carbs = parseFloat(document.getElementById("target-carbs").value) || 0;
+      const fat = parseFloat(document.getElementById("target-fat").value) || 0;
+
+      targets = { kcal, protein, carbs, fat };
+      saveTargets();
+      updateTargetUI();
+    });
+
+    // ======== INIT ========
+    document.addEventListener("DOMContentLoaded", () => {
+      loadTargets();
+      loadMeals();
+      updateTargetUI();
+      renderMealsTable();
+      updateMealSummary();
+    });
+  </script>
+</body>
+</html>
+
