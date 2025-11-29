@@ -15,6 +15,10 @@
 
         <form id="signup-form" class="form">
           <div class="field">
+            <span>Username</span>
+            <input type="text" id="username" required />
+          </div>
+          <div class="field">
             <span>Email</span>
             <input type="email" id="email" required />
           </div>
@@ -32,39 +36,45 @@
     </div>
 
     <script type="module">
-      import { auth } from "../../firebase/initialise.js";
-      import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  import { auth } from "../../firebase/initialise.js";
+  import { createUserWithEmailAndPassword } 
+    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-      const form = document.getElementById("signup-form");
-      const alertBox = document.getElementById("alert");
+  const form = document.getElementById("signup-form");
+  const alertBox = document.getElementById("alert");
 
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        alertBox.style.display = "none";
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    alertBox.style.display = "none";
 
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value.trim();
+    const username = document.getElementById("username").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-        try {
-          const result = await createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
-          );
-            window.location.href = "user_setup.html";
-        } catch (error) {
-          let msg = "Signup failed. Try again.";
-          if (error.code === "auth/email-already-in-use")
-            msg = "Email already registered.";
-          else if (error.code === "auth/invalid-email")
-            msg = "Invalid email format.";
-          else if (error.code === "auth/weak-password")
-            msg = "Password should be at least 6 characters.";
-          alertBox.textContent = msg;
-          alertBox.classList.add("error");
-          alertBox.style.display = "block";
-        }
-      });
-    </script>
+    try {
+      // Create Firebase account
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Store ONLY username now (the rest will be filled in user_setup)
+      localStorage.setItem("dreamfit-user-details", JSON.stringify({ username }));
+
+      // Redirect to setup page
+      window.location.href = "user_setup.html";
+
+    } catch (error) {
+      let msg = "Signup failed. Try again.";
+      if (error.code === "auth/email-already-in-use")
+        msg = "Email already registered.";
+      else if (error.code === "auth/invalid-email")
+        msg = "Invalid email format.";
+      else if (error.code === "auth/weak-password")
+        msg = "Password should be at least 6 characters.";
+
+      alertBox.textContent = msg;
+      alertBox.classList.add("error");
+      alertBox.style.display = "block";
+    }
+  });
+</script>
   </body>
 </html>

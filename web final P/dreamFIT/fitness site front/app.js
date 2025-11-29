@@ -1,6 +1,3 @@
-// app.js — shared JS for DreamFIT front-end
-
-// ===== BMI CALCULATOR =====
 (function () {
   const form = document.getElementById("bmi-form");
   if (!form) return; // not on bmi page
@@ -8,43 +5,150 @@
   const weightEl = document.getElementById("bmi-weight");
   const heightEl = document.getElementById("bmi-height");
   const goalEl = document.getElementById("bmi-goal");
+
   const resultBox = document.getElementById("bmi-result");
-  const valueEl = document.getElementById("bmi-value");
+
+  // New animated UI elements (if they exist)
+  const numberEl =
+    document.getElementById("bmi-number") || document.getElementById("bmi-value");
+  const ringEl = document.getElementById("bmi-ring-value");
   const categoryEl = document.getElementById("bmi-category");
+  const statusLineEl =
+    document.getElementById("bmi-status-line") || categoryEl;
   const tipEl = document.getElementById("bmi-tip");
+  const pillWrapper = document.getElementById("bmi-cat-pill-wrapper");
+
+  function getCategory(bmi) {
+    if (bmi < 18.5) return "underweight";
+    if (bmi < 25) return "normal";
+    if (bmi < 30) return "overweight";
+    return "obesity";
+  }
+
+  function categoryLabel(cat) {
+    switch (cat) {
+      case "underweight":
+        return "Underweight";
+      case "normal":
+        return "Normal weight";
+      case "overweight":
+        return "Overweight";
+      case "obesity":
+        return "Obesity";
+      default:
+        return "";
+    }
+  }
+
+  function goalTip(cat, goal) {
+    if (goal === "cut") {
+      if (cat === "underweight") {
+        return "You are already underweight — a cutting phase is not recommended. Talk to a health professional first.";
+      }
+      if (cat === "normal") {
+        return "When cutting in the normal range, use a small calorie deficit, high protein intake, and resistance training.";
+      }
+      return "For cutting, use a light calorie deficit, walk more, and keep lifting to protect muscle.";
+    }
+
+    if (goal === "bulk") {
+      if (cat === "obesity") {
+        return "Before bulking, it is usually safer to reduce body fat a bit with a moderate cut and strength training.";
+      }
+      return "For bulking, eat in a small surplus, focus on progressive overload, and keep protein high.";
+    }
+
+    // maintain
+    if (cat === "normal") {
+      return "Great! Staying active, sleeping well, and tracking your nutrition will help you maintain this range.";
+    }
+    if (cat === "underweight") {
+      return "Try to slowly increase your calories with nutrient-dense foods and resistance training.";
+    }
+    return "Keep your calories around maintenance, stay active, and monitor your weight trend over time.";
+  }
+
+  function animateNumber(el, from, to, duration) {
+    if (!el) return;
+    const start = performance.now();
+
+    function frame(now) {
+      const t = Math.min(1, (now - start) / duration);
+      const value = from + (to - from) * t;
+      el.textContent = value.toFixed(1);
+      if (t < 1) requestAnimationFrame(frame);
+    }
+
+    requestAnimationFrame(frame);
+  }
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const w = parseFloat(weightEl.value);
     const h = parseFloat(heightEl.value);
-
     if (!w || !h) return;
 
     const hMeters = h / 100;
     const bmi = w / (hMeters * hMeters);
     const rounded = Math.round(bmi * 10) / 10;
 
-    let category;
-    if (bmi < 18.5) category = "Underweight";
-    else if (bmi < 25) category = "Normal weight";
-    else if (bmi < 30) category = "Overweight";
-    else category = "Obesity";
-
-    valueEl.textContent = `BMI: ${rounded}`;
-    categoryEl.textContent = `Category: ${category}`;
+    const cat = getCategory(rounded);
+    const catLabel = categoryLabel(cat);
     const goal = goalEl.value;
 
-    let tip = "";
-    if (goal === "cut") {
-      tip = "For cutting, combine light calorie deficit with resistance training and enough protein.";
-    } else if (goal === "bulk") {
-      tip = "For bulking, eat in a small surplus and focus on progressive overload in your lifts.";
-    } else {
-      tip = "To maintain, keep your calories around maintenance and stay active.";
+    // Show result box
+    if (resultBox) {
+      resultBox.classList.remove("hidden");
+      // if you added CSS for .visible (animated card), this will trigger it
+      resultBox.classList.add("visible");
     }
 
-    tipEl.textContent = tip;
-    resultBox.classList.remove("hidden");
+    // Animate / write BMI number
+    if (numberEl) {
+      const current = parseFloat(numberEl.textContent) || 0;
+      animateNumber(numberEl, current, rounded, 600);
+    }
+
+    // Ring animation (if SVG ring is present)
+    if (ringEl) {
+      const maxBmiForRing = 40;
+      const clamped = Math.max(0, Math.min(maxBmiForRing, rounded));
+      const percent = clamped / maxBmiForRing;
+      const circumference = 440; // stroke-dasharray in the SVG
+      const offset = circumference * (1 - percent);
+      ringEl.style.strokeDasharray = String(circumference);
+      ringEl.style.strokeDashoffset = String(offset);
+    }
+
+    // Category + status line text
+    if (categoryEl) {
+      categoryEl.textContent = `Category: ${catLabel}`;
+    }
+    if (statusLineEl && statusLineEl !== categoryEl) {
+      statusLineEl.textContent = `Your BMI is ${rounded} kg/m².`;
+    }
+
+    // Category pill under the number (if wrapper exists)
+    if (pillWrapper) {
+      pillWrapper.innerHTML = "";
+      const pill = document.createElement("span");
+      pill.className =
+        "bmi-category-pill " +
+        (cat === "underweight"
+          ? "bmi-category-underweight"
+          : cat === "normal"
+          ? "bmi-category-normal"
+          : cat === "overweight"
+          ? "bmi-category-overweight"
+          : "bmi-category-obesity");
+      pill.textContent = catLabel;
+      pillWrapper.appendChild(pill);
+    }
+
+    // Tip text (depends on goal and category)
+    if (tipEl) {
+      tipEl.textContent = goalTip(cat, goal);
+    }
   });
 })();
 
