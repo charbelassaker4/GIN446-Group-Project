@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>DreamFIT — Profile</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="../../firebase/state_listener.js"></script>
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="logo">Dream<span>FIT</span></div>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="bmi.html">BMI</a>
+        <a href="bodyfat.html">Body Fat %</a>
+        <a href="workout.html">Workouts</a>
+        <a href="nutrition.html">Nutrition</a>
+        <a href="progress.html">Progress</a>
+        <a href="muscle-composition.html">Muscle Viewer</a>
+        <a href="profile.html" class="active">Profile</a>
+        <button id="logout-btn" class="pill-btn">Logout</button>
+        <script type="module" src="../../firebase/signout.js"></script>
+      </nav>
+    </header>
+
+    <main>
+      <div class="profile-container">
+        <!-- LEFT SIDE: Avatar + Name -->
+        <div class="profile-left">
+          <img
+            id="avatar"
+            class="profile-avatar"
+            src="https://ui-avatars.com/api/?name=User"
+            alt="Profile Avatar"
+          />
+          <h2 id="username" class="profile-name">User</h2>
+          <p id="logged-email" class="profile-email"></p>
+
+          <button id="edit-btn" class="btn primary btn-edit">
+            Edit Profile
+          </button>
+        </div>
+
+        <!-- RIGHT SIDE: Info -->
+        <div class="profile-right">
+          <h2 class="section-title">Profile Information</h2>
+
+          <!-- VIEW MODE -->
+          <div id="profile-view" class="profile-details"></div>
+
+          <!-- EDIT MODE -->
+          <form id="profile-edit" class="form">
+            <div class="field">
+              <label>Age</label>
+              <input type="number" id="age" />
+            </div>
+
+            <div class="field">
+              <label>Weight (kg)</label>
+              <input type="number" id="weight" />
+            </div>
+
+            <div class="field">
+              <label>Height (cm)</label>
+              <input type="number" id="height" />
+            </div>
+
+            <div class="field">
+              <label>Workouts per week</label>
+              <input type="number" id="workouts" />
+            </div>
+
+            <div class="field">
+              <label>Activity Level</label>
+              <select id="activity">
+                <option value="">Select...</option>
+                <option>Not very active</option>
+                <option>Lightly active</option>
+                <option>Active</option>
+                <option>Very active</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Goal</label>
+              <select id="goal">
+                <option value="">Select...</option>
+                <option>Lose weight</option>
+                <option>Maintain weight</option>
+                <option>Gain weight</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Sex</label>
+              <select id="sex">
+                <option value="">Select...</option>
+                <option>Male</option>
+                <option>Female</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Date of Birth</label>
+              <input type="date" id="dob" />
+            </div>
+
+            <div class="field">
+              <label>Country</label>
+              <input type="text" id="country" />
+            </div>
+
+            <button type="submit" class="btn primary full-width">
+              Save Changes
+            </button>
+          </form>
+
+          <div id="alert" class="alert" style="display: none"></div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module">
+      import { auth } from "../../firebase/initialise.js";
+      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+      const profileView = document.getElementById("profile-view");
+      const profileEdit = document.getElementById("profile-edit");
+      const editBtn = document.getElementById("edit-btn");
+      const alertBox = document.getElementById("alert");
+
+      let userData = {};
+
+      // Load Firebase user + stored profile
+      onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          window.location.href = "../fitness site back/login.html";
+          return;
+        }
+
+        // Set avatar & name
+        document.getElementById("logged-email").textContent =
+          "Logged in as: " + user.email;
+        document.getElementById("avatar").src =
+          "https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=" +
+          (user.displayName || user.email);
+
+        // Load saved data
+        const stored = localStorage.getItem("dreamfit-user-details");
+        userData = stored ? JSON.parse(stored) : {};
+        userData.email = user.email;
+
+        // NOW set username after loading userData
+        document.getElementById("username").textContent =
+          userData.username || user.email.split("@")[0];
+
+        renderViewMode();
+      });
+
+      // Render VIEW MODE
+      function renderViewMode() {
+        profileView.innerHTML = `
+      <p><strong>Age:</strong> ${userData.age || "N/A"}</p>
+      <p><strong>Weight:</strong> ${
+        userData.weight ? userData.weight + " kg" : "N/A"
+      }</p>
+      <p><strong>Height:</strong> ${
+        userData.height ? userData.height + " cm" : "N/A"
+      }</p>
+      <p><strong>Workouts per week:</strong> ${userData.workouts || "N/A"}</p>
+      <p><strong>Activity level:</strong> ${userData.activity || "N/A"}</p>
+      <p><strong>Goal:</strong> ${userData.goal || "N/A"}</p>
+      <p><strong>Sex:</strong> ${userData.sex || "N/A"}</p>
+      <p><strong>Date of Birth:</strong> ${userData.dob || "N/A"}</p>
+      <p><strong>Country:</strong> ${userData.country || "N/A"}</p>
+    `;
+
+        profileView.style.display = "block";
+        profileEdit.style.display = "none";
+      }
+
+      // Switch to EDIT MODE
+      editBtn.addEventListener("click", () => {
+        profileView.style.display = "none";
+        profileEdit.style.display = "block";
+
+        for (const key in userData) {
+          const field = document.getElementById(key);
+          if (field) field.value = userData[key];
+        }
+      });
+
+      // SAVE CHANGES
+      profileEdit.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        userData = {
+          username: userData.username,
+          age: age.value,
+          weight: weight.value,
+          height: height.value,
+          workouts: workouts.value,
+          activity: activity.value,
+          goal: goal.value,
+          sex: sex.value,
+          dob: dob.value,
+          country: country.value,
+          email: userData.email,
+        };
+
+        localStorage.setItem("dreamfit-user-details", JSON.stringify(userData));
+
+        alertBox.textContent = "Profile updated successfully!";
+        alertBox.classList.add("success");
+        alertBox.style.display = "block";
+
+        renderViewMode();
+      });
+    </script>
+  </body>
+</html>
