@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>DreamFIT — Nutrition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="../../firebase/state_listener.js"></script>
+
+    <style>
+      .hidden { display: none !important; }
+
+      /* Recommended block */
+      .recommended-card {
+        margin-top: 1rem;
+        padding: 1rem 1.1rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(148,163,184,0.4);
+        background: radial-gradient(circle at top left, rgba(34,197,94,0.25), rgba(15,23,42,0.95));
+      }
+      .recommended-card h3 {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+        color: #a5f3fc;
+      }
+    </style>
+
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="logo">Dream<span>FIT</span></div>
+      <nav class="main-nav">
+        <a href="../index.html">Home</a>
+        <a href="bmi.html">BMI</a>
+        <a href="bodyfat.html">Body Fat %</a>
+        <a href="workout.html">Workouts</a>
+        <a href="nutrition.html" class="active">Nutrition</a>
+        <a href="progress.html">Progress</a>
+        <a href="muscle-composition.html">Muscle Viewer</a>
+        <a href="profile.html">Profile</a>
+        <button id="logout-btn" class="pill-btn">Logout</button>
+        <script type="module" src="../../firebase/signout.js"></script>
+      </nav>
+    </header>
+
+    <main class="page-wide">
+      <h1>Nutrition Dashboard</h1>
+      <p class="page-intro">
+        Track calories, plan meals, and search foods using the USDA database.
+      </p>
+
+      <!-- INTERNAL NAV -->
+      <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem">
+        <button class="btn ghost" id="tab-targets">Daily Targets</button>
+        <button class="btn ghost" id="tab-meals">Meal Planner</button>
+        <button class="btn ghost" id="tab-search">Food Search</button>
+      </div>
+
+      <!-- ========================= -->
+      <!-- DAILY TARGETS -->
+      <!-- ========================= -->
+      <section id="targets-section" class="card-section">
+
+        <!-- ⭐ Added recommended block -->
+        <div class="recommended-card">
+          <h3>Recommended Daily Intake</h3>
+          <p id="recommended-kcal">Calories: —</p>
+          <p id="recommended-protein">Protein: — g</p>
+          <p id="recommended-carbs">Carbs: — g</p>
+          <p id="recommended-fat">Fat: — g</p>
+          <p id="recommended-fiber">Fiber: — g</p>
+        </div>
+
+        <h2 style="margin-top:1.2rem;">Your Daily Macro Targets</h2>
+        <p class="small-muted">
+          You can manually edit these numbers or use the recommended above.
+        </p>
+
+        <form id="target-form" class="target-grid">
+          <div class="field">
+            <label>Calories (kcal)</label>
+            <input type="number" id="target-kcal" min="0" placeholder="2200" />
+          </div>
+          <div class="field">
+            <label>Protein (g)</label>
+            <input type="number" id="target-protein" min="0" placeholder="150" />
+          </div>
+          <div class="field">
+            <label>Carbs (g)</label>
+            <input type="number" id="target-carbs" min="0" placeholder="230" />
+          </div>
+          <div class="field">
+            <label>Fat (g)</label>
+            <input type="number" id="target-fat" min="0" placeholder="70" />
+          </div>
+        </form>
+
+        <button id="save-targets-btn" class="btn primary" style="margin-top: 1rem">
+          Save targets
+        </button>
+
+        <div class="macro-strip" style="margin-top: 1rem">
+          <div class="stat-card">
+            <span class="stat-number" id="stat-kcal">— kcal</span>
+            <span class="stat-label">Daily calories</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-number" id="stat-protein">— g</span>
+            <span class="stat-label">Daily protein</span>
+          </div>
+        </div>
+
+        <!-- Progress card stays same -->
+        <div class="card-section" style="margin-top: 1rem">
+          <h2 style="font-size: 1rem">Today’s macro progress</h2>
+
+          <div class="macro-bars">
+            <div>
+              <div class="macro-bar-label">
+                <span>Calories</span><span id="bar-kcal-label">0 / 0</span>
+              </div>
+              <div class="macro-bar">
+                <div class="macro-bar-fill" id="bar-kcal-fill"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="macro-bar-label">
+                <span>Protein</span><span id="bar-protein-label">0 / 0</span>
+              </div>
+              <div class="macro-bar">
+                <div class="macro-bar-fill" id="bar-protein-fill"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="macro-bar-label">
+                <span>Carbs</span><span id="bar-carbs-label">0 / 0</span>
+              </div>
+              <div class="macro-bar">
+                <div class="macro-bar-fill" id="bar-carbs-fill"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="macro-bar-label">
+                <span>Fat</span><span id="bar-fat-label">0 / 0</span>
+              </div>
+              <div class="macro-bar">
+                <div class="macro-bar-fill" id="bar-fat-fill"></div>
+              </div>
+            </div>
+          </div>
+
+          <p id="macro-status-tag" class="tag-muted">No meals logged yet.</p>
+        </div>
+      </section>
+
+      <!-- ========================= -->
+      <!-- MEAL PLANNER (unchanged) -->
+      <!-- ========================= -->
+
+      <section id="meals-section" class="card-section hidden">
+        <h2>Meal Planner</h2>
+        <p class="small-muted">Log your meals and track calories automatically.</p>
+
+        <form id="meal-form" class="meal-form-grid">
+          <div class="field full-width">
+            <label>Meal name</label>
+            <input type="text" id="meal-name" placeholder="Breakfast omelette" required />
+          </div>
+
+          <div class="field">
+            <label>Calories</label><input type="number" id="meal-kcal" required />
+          </div>
+          <div class="field">
+            <label>Protein</label><input type="number" id="meal-protein" required />
+          </div>
+          <div class="field">
+            <label>Carbs</label><input type="number" id="meal-carbs" required />
+          </div>
+          <div class="field">
+            <label>Fat</label><input type="number" id="meal-fat" required />
+          </div>
+          <div class="field">
+            <label>Fiber</label><input type="number" id="meal-fiber" value="0" />
+          </div>
+
+          <div class="add-meal-wrapper">
+            <button class="btn primary" type="submit">Add Meal</button>
+          </div>
+        </form>
+
+        <div class="table-wrapper" style="margin-top: 1rem">
+          <table class="progress-table">
+            <thead>
+              <tr>
+                <th>Meal</th>
+                <th>Kcal</th>
+                <th>P</th>
+                <th>C</th>
+                <th>F</th>
+                <th>Fi</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="meal-table-body"></tbody>
+          </table>
+        </div>
+
+        <button id="clear-meals-btn" class="btn outline-danger small" style="margin-top: 1rem">
+          Reset today’s meals
+        </button>
+
+        <div class="summary-box" style="margin-top: 1rem">
+          <p><strong>Totals today:</strong></p>
+          <p id="summary-kcal">Calories: 0</p>
+          <p id="summary-protein">Protein: 0</p>
+          <p id="summary-carbs">Carbs: 0</p>
+          <p id="summary-fat">Fat: 0</p>
+          <p id="summary-fiber">Fiber: 0</p>
+        </div>
+      </section>
+
+      <!-- FOOD SEARCH (unchanged) -->
+      <section id="search-section" class="card-section hidden">
+        <h2>Food Database (USDA)</h2>
+        <p class="small-muted">Search thousands of foods and add them to your meals.</p>
+
+        <form id="food-search-form" class="form-grid">
+          <div class="field full-width">
+            <label>Food name</label>
+            <input id="food-search-input" type="text" required placeholder="banana, chicken breast, oats 50g" />
+          </div>
+          <button class="btn primary full-width" type="submit">Search</button>
+        </form>
+
+        <p id="api-status" style="margin-top: 0.5rem"></p>
+
+        <div id="api-results-wrapper" class="table-wrapper hidden" style="margin-top: 1rem">
+          <table class="food-table">
+            <thead>
+              <tr>
+                <th>Food</th>
+                <th>Serving</th>
+                <th>Kcal</th>
+                <th>P</th>
+                <th>C</th>
+                <th>F</th>
+                <th>Fi</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="api-results-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      DreamFIT — Nutrition • Built with precision 💪
+    </footer>
+
+    <!-- ========================= -->
+    <!-- JS SECTION -->
+    <!-- ========================= -->
+
+    <script>
+      /* =============================================
+         TAB NAVIGATION
+      ============================================= */
+
+      const tabTargets = document.getElementById("tab-targets");
+      const tabMeals = document.getElementById("tab-meals");
+      const tabSearch = document.getElementById("tab-search");
+
+      const sectionTargets = document.getElementById("targets-section");
+      const sectionMeals = document.getElementById("meals-section");
+      const sectionSearch = document.getElementById("search-section");
+
+      function switchTab(show) {
+        sectionTargets.classList.add("hidden");
+        sectionMeals.classList.add("hidden");
+        sectionSearch.classList.add("hidden");
+
+        tabTargets.classList.remove("primary");
+        tabMeals.classList.remove("primary");
+        tabSearch.classList.remove("primary");
+
+        show.section.classList.remove("hidden");
+        show.tab.classList.add("primary");
+      }
+
+      tabTargets.onclick = () => switchTab({ section: sectionTargets, tab: tabTargets });
+      tabMeals.onclick = () => switchTab({ section: sectionMeals, tab: tabMeals });
+      tabSearch.onclick = () => switchTab({ section: sectionSearch, tab: tabSearch });
+
+      switchTab({ section: sectionTargets, tab: tabTargets });
+
+      /* =============================================
+         STORAGE
+      ============================================= */
+
+      const STORAGE_TARGET_KEY = "dreamfit-nutrition-target-v1";
+      const STORAGE_MEALS_KEY = "dreamfit-nutrition-meals-v1";
+
+      const defaultTargets = { kcal: null, protein: null, carbs: null, fat: null };
+      let targets = { ...defaultTargets };
+      let meals = [];
+
+      /* =============================================
+         AUTO-CALC RECOMMENDED TARGETS
+      ============================================= */
+
+      function calculateRecommended() {
+        const user = JSON.parse(localStorage.getItem("dreamfit-user-details")) || {};
+        if (!user.weight || !user.height || !user.age || !user.sex || !user.activity)
+          return null;
+
+        const weight = parseFloat(user.weight);
+        const height = parseFloat(user.height);
+        const age = parseInt(user.age);
+
+        // BMR
+        let BMR = user.sex === "Male"
+          ? 10 * weight + 6.25 * height - 5 * age + 5
+          : 10 * weight + 6.25 * height - 5 * age - 161;
+
+        // Activity
+        const activityMap = {
+          "Not very active": 1.2,
+          "Lightly active": 1.375,
+          "Active": 1.55,
+          "Very active": 1.725
+        };
+        const multiplier = activityMap[user.activity] || 1.2;
+
+        let TDEE = BMR * multiplier;
+
+        // Goal adjust
+        if (user.goal === "Lose weight") TDEE -= 300;
+        if (user.goal === "Gain weight") TDEE += 300;
+
+        TDEE = Math.round(TDEE);
+
+        // Macro split
+        const protein = Math.round(weight * 2);
+        const fat = Math.round((TDEE * 0.25) / 9);
+        const carbs = Math.round((TDEE - (protein * 4 + fat * 9)) / 4);
+        const fiber = Math.round(weight * 0.8);
+
+        return { kcal: TDEE, protein, carbs, fat, fiber };
+      }
+
+      function showRecommended() {
+        const r = calculateRecommended();
+        if (!r) return;
+
+        document.getElementById("recommended-kcal").textContent = `Calories: ${r.kcal}`;
+        document.getElementById("recommended-protein").textContent = `Protein: ${r.protein} g`;
+        document.getElementById("recommended-carbs").textContent = `Carbs: ${r.carbs} g`;
+        document.getElementById("recommended-fat").textContent = `Fat: ${r.fat} g`;
+        document.getElementById("recommended-fiber").textContent = `Fiber: ${r.fiber} g`;
+
+        return r;
+      }
+
+      // Only auto-fill if user has not set custom values
+      function applyRecommendedIfEmpty() {
+        const r = calculateRecommended();
+        if (!r) return;
+
+        if (targets.kcal === null) targets.kcal = r.kcal;
+        if (targets.protein === null) targets.protein = r.protein;
+        if (targets.carbs === null) targets.carbs = r.carbs;
+        if (targets.fat === null) targets.fat = r.fat;
+      }
+
+      /* =============================================
+         LOAD/SAVE TARGETS & MEALS
+      ============================================= */
+
+      function loadTargets() {
+        try {
+          const raw = localStorage.getItem(STORAGE_TARGET_KEY);
+          if (raw) {
+            const saved = JSON.parse(raw);
+            targets = { ...targets, ...saved };
+          }
+        } catch {}
+      }
+
+      function saveTargets() {
+        localStorage.setItem(STORAGE_TARGET_KEY, JSON.stringify(targets));
+      }
+
+      function loadMeals() {
+        const raw = localStorage.getItem(STORAGE_MEALS_KEY);
+        if (raw) meals = JSON.parse(raw);
+      }
+
+      function saveMeals() {
+        localStorage.setItem(STORAGE_MEALS_KEY, JSON.stringify(meals));
+      }
+
+      /* =============================================
+         UI UPDATE FUNCTIONS
+      ============================================= */
+
+      function updateTargetUI() {
+        document.getElementById("target-kcal").value = targets.kcal || "";
+        document.getElementById("target-protein").value = targets.protein || "";
+        document.getElementById("target-carbs").value = targets.carbs || "";
+        document.getElementById("target-fat").value = targets.fat || "";
+
+        document.getElementById("stat-kcal").textContent =
+          targets.kcal ? `${targets.kcal} kcal` : "— kcal";
+        document.getElementById("stat-protein").textContent =
+          targets.protein ? `${targets.protein} g` : "— g";
+
+        updateMealSummary();
+      }
+
+      function getMealsTotals() {
+        return meals.reduce(
+          (acc, m) => {
+            acc.kcal += m.kcal;
+            acc.protein += m.protein;
+            acc.carbs += m.carbs;
+            acc.fat += m.fat;
+            acc.fiber += m.fiber;
+            return acc;
+          },
+          { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+        );
+      }
+
+      function renderMealsTable() {
+        const tbody = document.getElementById("meal-table-body");
+        tbody.innerHTML = "";
+
+        meals.forEach((m, index) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${m.name}</td>
+            <td>${m.kcal.toFixed(1)}</td>
+            <td>${m.protein.toFixed(1)}</td>
+            <td>${m.carbs.toFixed(1)}</td>
+            <td>${m.fat.toFixed(1)}</td>
+            <td>${m.fiber.toFixed(1)}</td>
+            <td><button type="button" class="btn outline-danger small" data-index="${index}">Remove</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function updateMealSummary() {
+        const totals = getMealsTotals();
+
+        document.getElementById("summary-kcal").textContent = `Calories: ${totals.kcal.toFixed(1)}`;
+        document.getElementById("summary-protein").textContent = `Protein: ${totals.protein.toFixed(1)} g`;
+        document.getElementById("summary-carbs").textContent = `Carbs: ${totals.carbs.toFixed(1)} g`;
+        document.getElementById("summary-fat").textContent = `Fat: ${totals.fat.toFixed(1)} g`;
+        document.getElementById("summary-fiber").textContent = `Fiber: ${totals.fiber.toFixed(1)} g`;
+
+        const barConfigs = [
+          { key: "kcal", labelId: "bar-kcal-label", fillId: "bar-kcal-fill" },
+          { key: "protein", labelId: "bar-protein-label", fillId: "bar-protein-fill" },
+          { key: "carbs", labelId: "bar-carbs-label", fillId: "bar-carbs-fill" },
+          { key: "fat", labelId: "bar-fat-label", fillId: "bar-fat-fill" },
+        ];
+
+        barConfigs.forEach((cfg) => {
+          const target = targets[cfg.key] || 0;
+          const current = totals[cfg.key] || 0;
+
+          document.getElementById(cfg.labelId).textContent =
+            `${current.toFixed(1)} / ${target}`;
+
+          const pct = target > 0 ? (current / target) * 100 : 0;
+          document.getElementById(cfg.fillId).style.width = Math.min(pct, 150) + "%";
+        });
+
+        const tag = document.getElementById("macro-status-tag");
+        if (meals.length === 0) {
+          tag.textContent = "No meals logged yet.";
+        } else {
+          const diff = (targets.kcal || 0) - totals.kcal;
+          if (!targets.kcal) tag.textContent = "Set a calorie target to track your day.";
+          else if (diff > 200) tag.textContent = "You still have room today.";
+          else if (diff > -200) tag.textContent = "You are close to your target!";
+          else tag.textContent = "You exceeded your calorie target.";
+        }
+      }
+
+      /* =============================================
+         MEAL FORM
+      ============================================= */
+
+      document.getElementById("meal-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById("meal-name").value.trim();
+        const kcal = parseFloat(document.getElementById("meal-kcal").value);
+        const protein = parseFloat(document.getElementById("meal-protein").value);
+        const carbs = parseFloat(document.getElementById("meal-carbs").value);
+        const fat = parseFloat(document.getElementById("meal-fat").value);
+        const fiber = parseFloat(document.getElementById("meal-fiber").value) || 0;
+
+        meals.push({ name, kcal, protein, carbs, fat, fiber });
+        saveMeals();
+        renderMealsTable();
+        updateMealSummary();
+
+        e.target.reset();
+      });
+
+      document.getElementById("meal-table-body").addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-index]");
+        if (!btn) return;
+
+        meals.splice(parseInt(btn.dataset.index), 1);
+        saveMeals();
+        renderMealsTable();
+        updateMealSummary();
+      });
+
+      document.getElementById("clear-meals-btn").addEventListener("click", () => {
+        meals = [];
+        saveMeals();
+        renderMealsTable();
+        updateMealSummary();
+      });
+
+      /* =============================================
+         TARGET FORM
+      ============================================= */
+
+      document.getElementById("save-targets-btn").addEventListener("click", () => {
+        targets = {
+          kcal: parseFloat(document.getElementById("target-kcal").value),
+          protein: parseFloat(document.getElementById("target-protein").value),
+          carbs: parseFloat(document.getElementById("target-carbs").value),
+          fat: parseFloat(document.getElementById("target-fat").value),
+        };
+
+        saveTargets();
+        updateTargetUI();
+      });
+
+      /* =============================================
+         USDA SEARCH (unchanged)
+      ============================================= */
+
+      const USDA_API_KEY = "PdI9gQtlxuwJgjNsfkFzvlarU8u30cMLPTHiJIHT";
+
+      async function searchUSDA(query) {
+        const url =
+          "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=" +
+          USDA_API_KEY +
+          "&pageSize=10&query=" +
+          encodeURIComponent(query);
+
+        const res = await fetch(url);
+        const data = await res.json();
+        return data.foods || [];
+      }
+
+      function extractMacros(food) {
+        const nutrients = food.foodNutrients || [];
+        const get = (n) => nutrients.find((x) => x.nutrientNumber == n)?.value || "—";
+        return {
+          kcal: get(1008),
+          protein: get(1003),
+          carbs: get(1005),
+          fat: get(1004),
+          fiber: get(1079),
+        };
+      }
+
+      document.getElementById("food-search-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const q = document.getElementById("food-search-input").value.trim();
+        if (!q) return;
+
+        document.getElementById("api-status").textContent = "Searching...";
+        document.getElementById("api-results-body").innerHTML = "";
+        document.getElementById("api-results-wrapper").classList.add("hidden");
+
+        try {
+          const foods = await searchUSDA(q);
+
+          if (!foods.length) {
+            document.getElementById("api-status").textContent = "No results found.";
+            return;
+          }
+
+          foods.forEach((food) => {
+            const m = extractMacros(food);
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${food.description}</td>
+              <td>${food.servingSize || "100 g"}</td>
+              <td>${m.kcal}</td>
+              <td>${m.protein}</td>
+              <td>${m.carbs}</td>
+              <td>${m.fat}</td>
+              <td>${m.fiber}</td>
+              <td><button class="btn primary small add-food">Add</button></td>
+            `;
+
+            tr.querySelector(".add-food").onclick = () => {
+              meals.push({
+                name: food.description,
+                kcal: parseFloat(m.kcal) || 0,
+                protein: parseFloat(m.protein) || 0,
+                carbs: parseFloat(m.carbs) || 0,
+                fat: parseFloat(m.fat) || 0,
+                fiber: parseFloat(m.fiber) || 0,
+              });
+              saveMeals();
+              renderMealsTable();
+              updateMealSummary();
+            };
+
+            document.getElementById("api-results-body").appendChild(tr);
+          });
+
+          document.getElementById("api-results-wrapper").classList.remove("hidden");
+          document.getElementById("api-status").textContent = "Results loaded.";
+        } catch {
+          document.getElementById("api-status").textContent = "API error. Try again.";
+        }
+      });
+
+      /* =============================================
+         INIT
+      ============================================= */
+
+      document.addEventListener("DOMContentLoaded", () => {
+        showRecommended();
+        loadTargets();
+        applyRecommendedIfEmpty();
+        loadMeals();
+
+        updateTargetUI();
+        renderMealsTable();
+        updateMealSummary();
+      });
+
+    </script>
+  </body>
+</html>
