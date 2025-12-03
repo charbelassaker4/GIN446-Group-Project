@@ -15,10 +15,6 @@
 
       <form id="signup-form" class="form">
         <div class="field">
-          <span>Username</span>
-          <input type="text" id="username" required />
-        </div>
-        <div class="field">
           <span>Email</span>
           <input type="email" id="email" required />
         </div>
@@ -47,7 +43,6 @@
       e.preventDefault();
       alertBox.style.display = "none";
 
-      const username = document.getElementById("username").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
@@ -56,7 +51,7 @@
         await createUserWithEmailAndPassword(auth, email, password);
 
         // Save username + email to localStorage for user_setup.html
-        localStorage.setItem("dreamfit-user-details", JSON.stringify({ username, email }));
+        localStorage.setItem("dreamfit-user-details", JSON.stringify({ email }));
 
         // Redirect to setup page
         window.location.href = "user_setup.html";

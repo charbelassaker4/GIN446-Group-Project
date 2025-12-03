@@ -11,6 +11,9 @@ if (!$data) {
     exit;
 }
 
+/* -------------------------
+   XAMPP LOCALHOST DATABASE
+-------------------------- */
 $servername = "sql207.infinityfree.com";
 $username = "if0_40571271";
 $password = "GMB7snG9jLuD";
